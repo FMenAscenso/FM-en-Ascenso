@@ -2,44 +2,147 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>FM en Ascenso V3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FM en Ascenso</title>
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{background:#111;color:#fff}
-header{background:#0d0d0d;padding:15px 20px;border-bottom:2px solid #4fc3f7;font-size:28px;font-weight:bold;color:#4fc3f7}
-.container{display:grid;grid-template-columns:230px 1fr 260px;min-height:100vh}
-.sidebar,.right{background:#151515;padding:20px}
-.sidebar{border-right:1px solid #222}
-.right{border-left:1px solid #222}
-.sidebar a{display:block;color:#ddd;text-decoration:none;padding:10px;margin-bottom:8px;background:#1d1d1d;border-radius:8px}
-.sidebar a:hover{background:#4fc3f7;color:#000}
-.main{padding:20px}
-.card{background:#1d1d1d;padding:15px;border-radius:12px;margin-bottom:15px}
-.card h3{color:#4fc3f7;margin-bottom:10px}
-iframe{width:100%;height:700px;border:none;border-radius:12px;background:#fff}
-@media(max-width:900px){
-.container{grid-template-columns:1fr}
-.sidebar,.right{display:none}
-iframe{height:600px}
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+background:#111;
+color:#fff;
+}
+
+header{
+background:#0d0d0d;
+padding:18px 22px;
+font-size:30px;
+font-weight:bold;
+color:#4fc3f7;
+border-bottom:2px solid #4fc3f7;
+}
+
+.container{
+display:grid;
+grid-template-columns:230px 1fr 260px;
+min-height:100vh;
+}
+
+.sidebar{
+background:#151515;
+padding:20px;
+border-right:1px solid #222;
+}
+
+.sidebar h3{
+color:#4fc3f7;
+margin-bottom:15px;
+}
+
+.sidebar a{
+display:block;
+color:#ddd;
+text-decoration:none;
+padding:10px;
+margin-bottom:8px;
+background:#1d1d1d;
+border-radius:8px;
+}
+
+.sidebar a:hover{
+background:#4fc3f7;
+color:#000;
+}
+
+.main{
+padding:20px;
+}
+
+.card{
+background:#1d1d1d;
+padding:15px;
+border-radius:12px;
+margin-bottom:15px;
+}
+
+.card h3{
+color:#4fc3f7;
+margin-bottom:12px;
+}
+
+iframe{
+width:100%;
+height:760px;
+border:none;
+border-radius:12px;
+background:#fff;
+}
+
+.right{
+background:#151515;
+padding:20px;
+border-left:1px solid #222;
+}
+
+.small{
+font-size:14px;
+line-height:1.8;
+color:#ddd;
+}
+
+footer{
+padding:18px;
+text-align:center;
+background:#0d0d0d;
+border-top:1px solid #222;
+color:#aaa;
+}
+
+@media(max-width:950px){
+
+.container{
+grid-template-columns:1fr;
+}
+
+.sidebar,
+.right{
+display:none;
+}
+
+iframe{
+height:650px;
+}
+
 }
 </style>
+
 </head>
 <body>
 
-<header>FM en Ascenso 📈</header>
+<header>
+FM en Ascenso 📈
+</header>
 
 <div class="container">
 
 <aside class="sidebar">
-<h3 style="color:#4fc3f7;margin-bottom:15px;">Categorías</h3>
+
+<h3>Categorías</h3>
+
 <a href="#">Primera Nacional</a>
-<a href="#">Primera B Metro</a>
+<a href="#">Primera B Metropolitana</a>
 <a href="#">Primera C</a>
-<a href="#">Federal A</a>
+<a href="#">Torneo Federal A</a>
 <a href="#">Regional Amateur</a>
 <a href="#">Mercado de Pases</a>
 <a href="#">Goleadores</a>
+<a href="#">Vallas Invictas</a>
+
 </aside>
 
 <main class="main">
@@ -47,7 +150,21 @@ iframe{height:600px}
 <div class="card">
 <h3>Resultados en Vivo</h3>
 
-<iframe src="https://www.scorebat.com/embed/livescore/"></iframe>
+<iframe 
+src="https://www.scorebat.com/embed/livescore/">
+</iframe>
+
+</div>
+
+<div class="card">
+<h3>Hoy en el Ascenso</h3>
+
+<div class="small">
+Primera Nacional: próximamente<br>
+B Metropolitana: próximamente<br>
+Primera C: próximamente<br>
+Federal A: próximamente
+</div>
 
 </div>
 
@@ -57,20 +174,42 @@ iframe{height:600px}
 
 <div class="card">
 <h3>Tabla Rápida</h3>
+
+<div class="small">
 1. Colón<br>
 2. Atlanta<br>
-3. Morón<br>
-4. Quilmes
+3. Quilmes<br>
+4. Morón<br>
+5. Chacarita
+</div>
+
+</div>
+
+<div class="card">
+<h3>Destacado</h3>
+
+<div class="small">
+Mercado de pases del ascenso argentino actualizado todos los días.
+</div>
+
 </div>
 
 <div class="card">
 <h3>Sponsor</h3>
-Tu marca acá
+
+<div class="small">
+Tu marca acá.
+</div>
+
 </div>
 
 </aside>
 
 </div>
+
+<footer>
+Instagram: @FMENASCENSO
+</footer>
 
 </body>
 </html>
