@@ -2,280 +2,1554 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>FM en Ascenso</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ascenso Argentina — Portal Oficial</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,Helvetica,sans-serif;
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e0e0e;--surface:#1a1a1a;--surface2:#222;--border:rgba(255,255,255,0.08);
+  --text:#f0f0f0;--muted:#666;--accent:#e8c44a;
+  --win:#1e5c35;--loss:#5c1e1e;--draw:#3a3a3a;
 }
 
-body{
-background:#f4f6f8;
-color:#111;
+/* ══════════════════════════════════════
+   CATEGORY SELECTOR BAR
+══════════════════════════════════════ */
+.cat-bar{
+  background:#080808;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  padding:0 1.5rem;
+  display:flex;
+  align-items:center;
+  gap:0;
+  height:38px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.cat-bar::-webkit-scrollbar{display:none;}
+.cat-item{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  padding:0 1rem;
+  height:38px;
+  display:flex;align-items:center;
+  cursor:pointer;
+  color:#444;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  white-space:nowrap;
+  transition:all .15s;
+  flex-shrink:0;
+}
+.cat-item:hover{color:#888;}
+.cat-item.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* ══════════════════════════════════════
+   HEADER
+══════════════════════════════════════ */
+.hdr{
+  background:#111;
+  border-bottom:2px solid var(--accent);
+  padding:0 1.5rem;
+  display:flex;align-items:center;gap:.75rem;
+  height:62px;
+  position:sticky;top:38px;z-index:10;
+}
+.logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:22px;letter-spacing:1px;color:var(--accent);
+  cursor:pointer;
+}
+.logo span{color:#fff;}
+.logo .logo-cat{
+  font-size:11px;font-weight:600;letter-spacing:2px;color:#555;
+  display:block;margin-top:-4px;text-transform:uppercase;
+}
+.nav{display:flex;gap:0;margin-left:auto;align-items:center;}
+.ni{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:600;letter-spacing:.5px;
+  padding:0 1.1rem;height:62px;
+  display:flex;align-items:center;cursor:pointer;
+  color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;
+  transition:all .15s;text-transform:uppercase;
+}
+.ni:hover{color:var(--text);}
+.ni.active{color:var(--accent);border-bottom-color:var(--accent);}
+.user-btn{
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--border);background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;margin-left:.5rem;transition:all .15s;flex-shrink:0;
+}
+.user-btn:hover{border-color:var(--accent);}
+.user-btn svg{width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;}
+.user-btn:hover svg{stroke:var(--accent);}
+
+/* Cat-bar is sticky too */
+.cat-bar-sticky{position:sticky;top:0;z-index:11;}
+.hdr{top:38px;}
+
+/* ══════════════════════════════════════
+   MODAL
+══════════════════════════════════════ */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;width:340px;max-width:90vw;}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin-bottom:1.25rem;}
+.modal input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.6rem .85rem;color:var(--text);font-size:14px;margin-bottom:.75rem;outline:none;transition:border-color .15s;}
+.modal input:focus{border-color:var(--accent);}
+.modal-btn{width:100%;background:var(--accent);color:#111;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px;border:none;border-radius:6px;padding:.65rem;cursor:pointer;margin-top:.25rem;}
+.modal-btn:hover{opacity:.9;}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;margin-top:-4px;}
+.modal-sub{font-size:12px;color:var(--muted);text-align:center;margin-top:.85rem;}
+
+/* ══════════════════════════════════════
+   PAGES
+══════════════════════════════════════ */
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+.page{display:none;max-width:1600px;margin:0 auto;padding:1.5rem 1.5rem;}
+.page.active{display:block;animation:pageEnter .2s ease;}
+.page.active#page-foro{display:flex!important;}
+#page-foro{max-width:100%!important;margin:0!important;padding:0!important;}
+@keyframes pageEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ══════════════════════════════════════
+   CATEGORY LANDING (when no cat selected)
+══════════════════════════════════════ */
+.cat-landing{
+  max-width:900px;margin:4rem auto;padding:2rem;text-align:center;
+}
+.cat-landing-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:52px;font-weight:700;letter-spacing:2px;
+  color:var(--accent);margin-bottom:.25rem;
+}
+.cat-landing-sub{font-size:15px;color:#555;margin-bottom:3rem;}
+.cat-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;}
+.cat-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:1.75rem 1rem;
+  cursor:pointer;
+  transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:.75rem;
+}
+.cat-card:hover{
+  border-color:var(--accent);
+  transform:translateY(-4px);
+  box-shadow:0 12px 32px rgba(0,0,0,.4);
+}
+.cat-card-icon{font-size:36px;}
+.cat-card-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:700;letter-spacing:.5px;
+  color:#e0e0e0;text-align:center;line-height:1.2;
+}
+.cat-card-badge{
+  font-size:10px;font-weight:700;letter-spacing:1px;
+  padding:2px 8px;border-radius:20px;
+  background:rgba(232,196,74,.12);color:var(--accent);
+  text-transform:uppercase;
 }
 
-header{
-background:#0d1117;
-color:#4fc3f7;
-padding:18px 25px;
-font-size:30px;
-font-weight:bold;
-border-bottom:3px solid #4fc3f7;
+/* ══════════════════════════════════════
+   LAYOUT INTERIOR
+══════════════════════════════════════ */
+.sec{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#ccc;margin-bottom:.6rem;}
+.sec-2dafase{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#fff;margin:.65rem 0 .5rem;}
+.inicio-grid{display:grid;grid-template-columns:minmax(480px,520px) 1fr;gap:3rem;align-items:start;}
+
+/* fecha nav */
+.fecha-hdr{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin-bottom:.85rem;display:flex;align-items:center;gap:.6rem;box-sizing:border-box;}
+.fnav{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:15px;transition:all .15s;flex-shrink:0;user-select:none;}
+.fnav:hover{color:var(--accent);border-color:var(--accent);}
+.fnav.dis{opacity:.2;cursor:default;pointer-events:none;}
+.fi{flex:1;text-align:center;}
+.fnum{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--accent);}
+.fsub{font-size:13px;color:#e0e0e0;margin-top:2px;font-weight:500;}
+
+/* partidos */
+.dia-lbl{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:.5px;color:var(--accent);margin:.9rem 0 .35rem;}
+.dia-week{color:var(--accent);}
+.dia-date{color:#f0f0f0;}
+.partido-wrap{margin-bottom:.85rem;}
+.partido{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.6rem .9rem;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:.4rem;transition:border-color .15s;}
+.partido:hover{border-color:rgba(255,255,255,0.14);}
+.partido.topo-dia{border-left:3px solid var(--accent);}
+.eq{display:flex;align-items:center;gap:.4rem;}
+.eq.vis{flex-direction:row-reverse;}
+.esc{width:32px;height:32px;display:flex;align-items:center;justify-content:contain;flex-shrink:0;}
+.esc img{width:100%;height:100%;object-fit:contain;}
+.eqn{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;line-height:1.1;}
+.eq.vis .eqn{text-align:right;}
+.grp-pill{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:20px;padding:0 6px;border-radius:999px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.3px;margin-right:.22rem;}
+.res{text-align:center;min-width:64px;}
+.score{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;letter-spacing:2px;}
+.score .sep{color:var(--muted);font-weight:400;margin:0 2px;}
+.vs{font-size:11px;color:#444;letter-spacing:1px;font-weight:600;}
+
+/* tablas */
+.tabla-mini{background:var(--surface);border:1px solid var(--border);border-radius:7px;overflow-x:auto;margin-bottom:.7rem;}
+.tabla-mini table,.tabla-stats{width:100%;border-collapse:collapse;}
+.tabla-mini thead th{background:var(--surface2);padding:.45rem .45rem;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);text-align:center;border-bottom:1px solid var(--border);white-space:nowrap;}
+.tabla-mini thead th:nth-child(2){text-align:left;}
+.tabla-mini tbody tr{border-bottom:1px solid var(--border);}
+.tabla-mini tbody tr:last-child{border-bottom:none;}
+.tabla-mini tbody tr:hover{background:rgba(255,255,255,0.03);}
+.tabla-mini tbody td{padding:.5rem .45rem;text-align:center;font-size:13px;line-height:1.2;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tabla-mini tbody td:nth-child(2){text-align:left;overflow:visible;max-width:none;}
+.pos{font-size:14px;font-weight:700;color:#bbb;}
+.pos.clasif{color:#4caf50;}
+.pos.quinto{color:#e8c44a;}
+.pos.noclasif{color:#c0504d;}
+.pts{font-weight:700;font-size:14px;}
+.tr-eq{display:flex;align-items:center;gap:.4rem;}
+.me{width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.me img{width:100%;height:100%;object-fit:contain;}
+
+/* zona tabs */
+.ztabs{display:flex;gap:.6rem;margin-bottom:.85rem;flex-wrap:wrap;}
+.ztab{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.5px;padding:7px 18px;border-radius:8px;border:1px solid var(--accent);cursor:pointer;color:#111;background:var(--accent);transition:all .15s;text-transform:uppercase;}
+.ztab:hover{opacity:.85;}
+.ztab.active{background:#fff;color:#111;border-color:#fff;font-weight:800;}
+
+/* placeholder */
+.placeholder{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4rem 2rem;text-align:center;color:var(--muted);}
+.ph-icon{font-size:40px;margin-bottom:.85rem;}
+.ph-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:600;color:#444;margin-bottom:.4rem;}
+.ph-sub{font-size:13px;}
+
+/* live */
+@keyframes glowLive{0%,100%{box-shadow:0 0 6px rgba(46,160,67,0.3)}50%{box-shadow:0 0 18px rgba(46,160,67,0.6)}}
+@keyframes breathe{0%,100%{opacity:1;}50%{opacity:.6;}}
+.partido-live{animation:glowLive 2.5s ease-in-out infinite;border-color:rgba(46,160,67,0.6) !important;}
+.score-live{color:var(--accent) !important;}
+.minuto-live{color:#2ea043;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;animation:breathe 2s ease-in-out infinite;}
+
+/* stream/ficha buttons */
+.stream-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#1a0a0a;border:1px solid #5a1a1a;border-radius:6px;text-decoration:none;flex-shrink:0;transition:border-color .15s;}
+.stream-btn:hover{border-color:#e8453a;}
+.ficha-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;text-decoration:none;flex-shrink:0;cursor:pointer;font-size:16px;transition:border-color .15s;}
+.ficha-btn:hover{border-color:rgba(255,255,255,.3);}
+
+/* planteles */
+.plt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:.65rem;margin-bottom:.25rem;}
+.plt-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:.9rem .5rem .7rem;display:flex;flex-direction:column;align-items:center;gap:.5rem;cursor:pointer;transition:transform .18s,background .18s,box-shadow .18s,border-color .18s;}
+.plt-card:hover{background:rgba(255,255,255,.1);transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.35);border-color:rgba(255,255,255,.18);}
+.plt-card img{width:52px;height:52px;object-fit:contain;}
+.plt-noesc{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:20px;color:#666;}
+.plt-cn{font-size:10.5px;text-align:center;color:#ccc;line-height:1.3;}
+.plt-zone-sep{height:1px;background:rgba(255,255,255,.07);margin:1.4rem 0 1.2rem;}
+.plt-back-btn{display:inline-flex;align-items:center;gap:.35rem;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;padding:.3rem 0;margin-bottom:1.2rem;transition:color .15s;}
+.plt-back-btn:hover{color:#fff;}
+.plt-detail-header{display:flex;align-items:center;gap:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:1.5rem;}
+.plt-detail-escudo{width:68px;height:68px;object-fit:contain;flex-shrink:0;}
+.plt-detail-name{font-family:'Barlow Condensed',sans-serif;font-size:1.55rem;font-weight:700;letter-spacing:.5px;line-height:1.15;}
+.plt-zona-pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-top:.3rem;}
+.plt-sec-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#777;margin:.2rem 0 .7rem;}
+.plt-matches-list{display:flex;flex-direction:column;gap:.22rem;margin-bottom:2rem;}
+.plt-match-row{display:grid;grid-template-columns:34px 1fr auto auto auto;align-items:center;gap:.55rem;padding:.52rem .65rem;border-radius:8px;background:rgba(255,255,255,.03);transition:background .15s;}
+.plt-match-row:hover{background:rgba(255,255,255,.07);}
+.plt-fecha-lbl{font-size:10px;color:#777;font-weight:600;text-align:center;}
+.plt-rival-cell{display:flex;align-items:center;gap:.4rem;min-width:0;}
+.plt-rival-cell img{width:20px;height:20px;object-fit:contain;flex-shrink:0;}
+.plt-rival-name{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.plt-lv-badge{font-size:9px;color:#888;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:3px;flex-shrink:0;font-weight:600;}
+.plt-res-badge{font-size:12px;font-weight:700;padding:3px 8px;border-radius:5px;min-width:40px;text-align:center;flex-shrink:0;}
+.plt-res-badge.G{background:rgba(77,175,74,.22);color:#7ecb7e;}
+.plt-res-badge.E{background:rgba(255,193,7,.16);color:#ffd54f;}
+.plt-res-badge.P{background:rgba(229,57,53,.18);color:#ef9a9a;}
+.plt-action-btns{display:flex;gap:.25rem;flex-shrink:0;}
+.plt-act-btn{width:27px;height:27px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;font-size:14px;transition:background .15s;border:none;background:none;text-decoration:none;}
+.plt-act-btn:hover:not(.plt-dis){background:rgba(255,255,255,.1);}
+.plt-act-btn.plt-dis{opacity:.25;cursor:default;pointer-events:none;}
+.plt-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:.5rem;}
+.plt-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;}
+.plt-table thead th{padding:.45rem .55rem;border-bottom:2px solid rgba(255,255,255,.12);cursor:pointer;text-align:center;color:var(--muted);font-weight:700;font-size:11px;user-select:none;transition:color .15s;}
+.plt-table thead th:first-child{text-align:left;min-width:130px;position:sticky;left:0;z-index:2;background:#181818;}
+.plt-table thead th:hover{color:#ddd;}
+.plt-table thead th.plt-sorted{color:#fff;}
+.plt-table tbody td{padding:.35rem .55rem;border-bottom:1px solid rgba(255,255,255,.05);text-align:center;vertical-align:middle;}
+.plt-table tbody td:first-child{text-align:left;position:sticky;left:0;z-index:1;background:#1a1a1a;}
+.plt-table tbody tr:hover td{background:rgba(255,255,255,.04);}
+.plt-table .plt-stat-hi{font-weight:700;color:#e8e8e8;}
+.plt-table .plt-stat-0{color:#444;}
+.plt-table .plt-gol-hi{color:#ffd54f;font-weight:700;}
+.plt-table .plt-ast-hi{color:#80cbc4;font-weight:700;}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media(max-width:900px){
+  .inicio-grid{grid-template-columns:1fr 1fr;gap:1rem;}
+  .inicio-grid > div:last-child{grid-column:1 / -1;}
 }
-
-.sub{
-font-size:13px;
-color:#9fb3c8;
-margin-top:4px;
-}
-
-.layout{
-display:grid;
-grid-template-columns:250px 1fr 300px;
-min-height:100vh;
-}
-
-/* LEFT */
-.sidebar{
-background:#ffffff;
-border-right:1px solid #dfe3e8;
-padding:20px;
-}
-
-.sidebar h3{
-font-size:18px;
-margin-bottom:14px;
-color:#0d1117;
-}
-
-.sidebar a{
-display:block;
-text-decoration:none;
-color:#111;
-padding:10px 12px;
-border-radius:8px;
-margin-bottom:8px;
-font-size:15px;
-transition:.2s;
-background:#f3f5f7;
-}
-
-.sidebar a:hover{
-background:#4fc3f7;
-color:#000;
-}
-
-/* CENTER */
-.main{
-padding:20px;
-}
-
-.box{
-background:#fff;
-border:1px solid #dde3ea;
-border-radius:12px;
-padding:16px;
-margin-bottom:18px;
-}
-
-.box h2{
-font-size:20px;
-margin-bottom:12px;
-color:#0d1117;
-}
-
-.match{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:12px;
-border-bottom:1px solid #edf1f5;
-font-size:15px;
-}
-
-.match:last-child{
-border-bottom:none;
-}
-
-.live{
-color:#00b050;
-font-weight:bold;
-font-size:13px;
-}
-
-/* RIGHT */
-.right{
-padding:20px;
-background:#f9fafb;
-border-left:1px solid #dfe3e8;
-}
-
-.card{
-background:#fff;
-border:1px solid #dde3ea;
-border-radius:12px;
-padding:15px;
-margin-bottom:16px;
-}
-
-.card h3{
-margin-bottom:10px;
-font-size:18px;
-}
-
-.rank{
-line-height:1.9;
-font-size:14px;
-}
-
-/* FOOTER */
-footer{
-background:#0d1117;
-color:#c7d1db;
-padding:18px;
-text-align:center;
-font-size:14px;
-}
-
-/* MOBILE */
-@media(max-width:980px){
-
-.layout{
-grid-template-columns:1fr;
-}
-
-.sidebar,.right{
-display:none;
-}
-
-header{
-font-size:24px;
-}
-
+@media(max-width:700px){
+  .cat-bar-sticky{top:0;}
+  .hdr{top:38px;padding:0 .4rem;gap:.2rem;height:52px;}
+  .logo{font-size:14px;}
+  .logo .logo-cat{font-size:9px;}
+  .nav{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;scrollbar-width:none;flex:1;}
+  .nav::-webkit-scrollbar{display:none;}
+  .ni{font-size:10px;padding:0 .3rem;height:52px;letter-spacing:0;white-space:nowrap;}
+  .user-btn{width:26px;height:26px;margin-left:.2rem;flex-shrink:0;}
+  html,body{overflow-x:hidden;}
+  .page{padding:.75rem .4rem;}
+  .inicio-grid{grid-template-columns:1fr!important;gap:1rem;}
+  #inner-grid{grid-template-columns:1fr!important;gap:.75rem!important;}
+  .partido{padding:.4rem .5rem;gap:.2rem;}
+  .eqn{font-size:12px;}
+  .score{font-size:18px;letter-spacing:1px;}
+  .esc{width:20px;height:20px;}
+  .ficha-btn,.stream-btn{width:28px;height:28px;font-size:13px;}
+  .res{min-width:46px;}
+  .ztabs{gap:.2rem;}
+  .ztab{font-size:10px;padding:3px 8px;}
+  .cat-cards{grid-template-columns:1fr 1fr;}
+  .cat-landing-title{font-size:36px;}
+  .plt-grid{grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:.45rem;}
+  #page-foro{height:calc(100vh - 90px)!important;}
 }
 </style>
-
 </head>
 <body>
 
-<header>
-FM en Ascenso 📈
-<div class="sub">Toda la info del Ascenso Argentino</div>
-</header>
-
-<div class="layout">
-
-<!-- IZQUIERDA -->
-<aside class="sidebar">
-
-<h3>Categorías</h3>
-
-<a href="#">Primera Nacional</a>
-<a href="#">Primera B Metropolitana</a>
-<a href="#">Primera C</a>
-<a href="#">Torneo Federal A</a>
-<a href="#">Regional Amateur</a>
-<a href="#">Copa Argentina</a>
-<a href="#">Mercado de Pases</a>
-<a href="#">Goleadores</a>
-<a href="#">Vallas Invictas</a>
-
-</aside>
-
-<!-- CENTRO -->
-<main class="main">
-
-<div class="box">
-<h2>Resultados en Vivo</h2>
-
-<div class="match">
-<span>Colón vs Morón</span>
-<span class="live">67' 2-1</span>
+<!-- ══ CATEGORY BAR ══ -->
+<div class="cat-bar cat-bar-sticky" id="cat-bar">
+  <div class="cat-item active" onclick="selCategoria('federal-a',this)">Federal A</div>
+  <div class="cat-item" onclick="selCategoria('primera-nacional',this)">Primera Nacional</div>
+  <div class="cat-item" onclick="selCategoria('primera-b',this)">Primera B Metro</div>
+  <div class="cat-item" onclick="selCategoria('primera-c',this)">Primera C</div>
+  <div class="cat-item" onclick="selCategoria('promocional',this)">Prom. Amateur</div>
 </div>
 
-<div class="match">
-<span>Chicago vs Quilmes</span>
-<span class="live">45' 0-0</span>
+<!-- ══ HEADER ══ -->
+<div class="hdr">
+  <div class="logo" onclick="goPage('inicio',document.querySelector('.ni'))">
+    ASCENSO <span>ARG</span>
+    <span class="logo-cat" id="logo-cat">Federal A · 2026</span>
+  </div>
+  <div class="nav">
+    <div class="ni active" onclick="goPage('inicio',this)">Inicio</div>
+    <div class="ni" onclick="goPage('fixture',this)">Fixture</div>
+    <div class="ni" onclick="goPage('planteles',this)">Equipos</div>
+    <div class="ni" onclick="goPage('estadisticas',this)">Estadísticas</div>
+    <div class="ni" onclick="goPage('reglamento',this)">Reglamento</div>
+    <div class="ni" onclick="goPage('foro',this)">Foro</div>
+    <div class="user-btn" id="user-btn" onclick="abrirModal()" title="Iniciar sesión">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </div>
+  </div>
 </div>
 
-<div class="match">
-<span>Atlanta vs Güemes</span>
-<span>Final 3-0</span>
+<!-- ══ LOGIN MODAL ══ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="toggleModal()">&#10005;</button>
+    <div id="panel-login">
+      <div class="modal-title">Iniciar sesión</div>
+      <input type="email" placeholder="Correo electrónico" id="inp-email" onkeydown="if(event.key==='Enter')loginConEmail()">
+      <input type="password" placeholder="Contraseña" id="inp-pass" onkeydown="if(event.key==='Enter')loginConEmail()">
+      <button class="modal-btn" onclick="loginConEmail()">Ingresar</button>
+      <div class="modal-sub">¿No tenés cuenta? <span style="color:var(--accent);cursor:pointer" onclick="mostrarPanel('registro')">Registrate</span></div>
+    </div>
+    <div id="panel-registro" style="display:none;">
+      <div class="modal-title">Crear cuenta</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:.7rem;">Los campos con 🔒 son privados y no serán visibles públicamente.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+        <input type="text" placeholder="Nombre 🔒" id="reg-nombre">
+        <input type="text" placeholder="Apellido 🔒" id="reg-apellido">
+      </div>
+      <input type="email" placeholder="Email 🔒" id="reg-email">
+      <input type="password" placeholder="Contraseña 🔒" id="reg-pass">
+      <input type="text" placeholder="Nombre de usuario (público)" id="reg-username" maxlength="20">
+      <select id="reg-equipo" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.55rem .75rem;color:var(--text);font-size:14px;font-family:'Barlow',sans-serif;outline:none;margin-bottom:.5rem;">
+        <option value="">Tu equipo de fútbol...</option>
+      </select>
+      <button class="modal-btn" onclick="registrarUsuario()">Registrarme</button>
+      <div class="modal-sub">¿Ya tenés cuenta? <span style="color:var(--accent);cursor:pointer" onclick="mostrarPanel('login')">Iniciá sesión</span></div>
+    </div>
+    <div id="panel-perfil" style="display:none;">
+      <div id="perfil-info" style="margin-bottom:1.25rem;"></div>
+      <button class="modal-btn" onclick="cerrarSesion()" style="background:transparent;border:1px solid #e57373;color:#e57373;margin-top:.5rem;">Cerrar sesión</button>
+    </div>
+  </div>
 </div>
 
-<div class="match">
-<span>Temperley vs Chacarita</span>
-<span>21:10</span>
+<!-- ══ PAGES ══ -->
+<div class="page active" id="page-inicio">
+  <!-- Shown when a category is selected -->
+  <div id="inicio-cat-content" style="display:none;">
+    <div class="inicio-grid">
+      <div>
+        <p class="sec" style="color:#fff;">Resultados</p>
+        <div style="display:flex;align-items:stretch;gap:.4rem;">
+          <div class="fecha-hdr" style="flex:1;">
+            <div class="fnav dis" id="btn-prev" onclick="cambiar(-1)">&#8592;</div>
+            <div class="fi" style="position:relative;">
+              <div class="fnum" id="fnum" onclick="toggleFechaPicker()" style="cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.2rem .75rem;">
+                <span id="fnum-txt">Fecha 1</span>
+                <span style="font-size:11px;color:var(--muted);">▼</span>
+              </div>
+              <div id="fecha-picker" style="display:none;position:absolute;top:110%;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:8px;z-index:50;padding:.5rem;box-shadow:0 4px 16px rgba(0,0,0,.5);">
+                <div id="fecha-picker-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:.3rem;width:210px;"></div>
+              </div>
+              <div class="fsub" id="fsub-txt">Primera Fase — 2026</div>
+            </div>
+            <div class="fnav" id="btn-next" onclick="cambiar(1)">&#8594;</div>
+          </div>
+          <div style="width:32px;flex-shrink:0;"></div>
+        </div>
+        <div id="partidos-cont"></div>
+      </div>
+      <div>
+        <div id="inner-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+          <div id="tablas-zona-a" style="align-self:start;"></div>
+          <div id="tablas-zona-b" style="align-self:start;"></div>
+          <div id="tablas-zona-c" style="align-self:start;"></div>
+          <div id="tablas-zona-d" style="align-self:start;"></div>
+          <div id="col-izq" style="align-self:start;">
+            <div id="cont-quintos"></div>
+            <div id="cont-goleadores-resumen" style="margin-top:1rem;"></div>
+          </div>
+          <div id="col-der" style="align-self:start;">
+            <div id="cont-2dafase"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Shown when NO category is selected (landing) -->
+  <div id="inicio-landing" style="display:none;">
+    <div class="cat-landing">
+      <div class="cat-landing-title">ASCENSO ARG</div>
+      <div class="cat-landing-sub">Seleccioná una categoría para ver resultados, tablas y estadísticas</div>
+      <div class="cat-cards">
+        <div class="cat-card" onclick="selCategoria('federal-a',document.querySelector('[onclick*=federal-a]'))">
+          <div class="cat-card-icon">🏆</div>
+          <div class="cat-card-name">Federal A</div>
+          <div class="cat-card-badge">4ta división</div>
+        </div>
+        <div class="cat-card" onclick="selCategoria('primera-nacional',document.querySelector('[onclick*=primera-nacional]'))">
+          <div class="cat-card-icon">⚽</div>
+          <div class="cat-card-name">Primera Nacional</div>
+          <div class="cat-card-badge">2da división</div>
+        </div>
+        <div class="cat-card" onclick="selCategoria('primera-b',document.querySelector('[onclick*=primera-b]'))">
+          <div class="cat-card-icon">🥈</div>
+          <div class="cat-card-name">Primera B Metro</div>
+          <div class="cat-card-badge">3ra división</div>
+        </div>
+        <div class="cat-card" onclick="selCategoria('primera-c',document.querySelector('[onclick*=primera-c]'))">
+          <div class="cat-card-icon">🥉</div>
+          <div class="cat-card-name">Primera C</div>
+          <div class="cat-card-badge">4ta división</div>
+        </div>
+        <div class="cat-card" onclick="selCategoria('promocional',document.querySelector('[onclick*=promocional]'))">
+          <div class="cat-card-icon">🌱</div>
+          <div class="cat-card-name">Prom. Amateur</div>
+          <div class="cat-card-badge">Amateur</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<div class="page" id="page-fixture">
+  <p class="sec" id="fixture-title">Fixture completo — 2026</p>
+  <div class="ztabs" id="fx-tabs"></div>
+  <div id="fx-cont"></div>
 </div>
 
-<div class="box">
-<h2>Noticias</h2>
-
-<div class="match">
-<span>Refuerzo confirmado en Primera Nacional</span>
+<div class="page" id="page-planteles">
+  <div id="plt-landing"><div id="plt-grid-cont"></div></div>
+  <div id="plt-club-detail" style="display:none;">
+    <button class="plt-back-btn" onclick="voltarPlanteles()">← Volver a planteles</button>
+    <div id="plt-detail-header-cont"></div>
+    <div id="plt-matches-cont"></div>
+    <div id="plt-squad-cont"></div>
+  </div>
 </div>
 
-<div class="match">
-<span>Así quedó la tabla de la B Metro</span>
+<div class="page" id="page-estadisticas" style="max-width:1100px!important;">
+  <div id="stats-loading" style="text-align:center;padding:3rem;color:var(--muted);">Cargando estadísticas...</div>
+  <div id="stats-content" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem;">
+      <div class="ztabs" id="stats-tabs" style="margin-bottom:0;">
+        <div class="ztab active" onclick="showStatsTab('jugadores',this)">Jugadores</div>
+        <div class="ztab" onclick="showStatsTab('equipos',this)">Tablas</div>
+        <div class="ztab" onclick="showStatsTab('arbitros',this)">Árbitros</div>
+      </div>
+      <span style="font-size:11px;color:#999;font-style:italic;">* Solo se cuentan los partidos con ficha cargada</span>
+    </div>
+    <div id="stats-jugadores">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div><p class="sec">⚽ Goleadores</p><div class="tabla-mini" id="tbl-goleadores"></div></div>
+        <div><p class="sec">👟 Asistentes</p><div class="tabla-mini" id="tbl-asistentes"></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div><p class="sec">🟨 Amonestaciones</p><div class="tabla-mini" id="tbl-amarillas"></div></div>
+        <div><p class="sec">🟥 Expulsiones</p><div class="tabla-mini" id="tbl-rojas"></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div><p class="sec">🧤 Vallas invictas</p><div class="tabla-mini" id="tbl-vallas"></div></div>
+        <div><p class="sec">🎯 Goles de tiro libre</p><div class="tabla-mini" id="tbl-tiro-libre"></div></div>
+      </div>
+    </div>
+    <div id="stats-equipos" style="display:none;">
+      <div style="margin-bottom:1rem;"><p class="sec">📋 Tabla general</p><div class="tabla-mini" style="max-width:600px;" id="tbl-general"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div><p class="sec">🏠 Como local</p><div class="tabla-mini" id="tbl-local-stats"></div></div>
+        <div><p class="sec">✈️ Como visitante</p><div class="tabla-mini" id="tbl-visitante-stats"></div></div>
+      </div>
+    </div>
+    <div id="stats-arbitros" style="display:none;">
+      <p class="sec">🧑‍⚖️ Rendimiento de árbitros</p>
+      <div class="tabla-mini" id="tbl-arbitros"></div>
+    </div>
+  </div>
 </div>
 
-<div class="match">
-<span>Federal A: resumen de la fecha</span>
+<div class="page" id="page-reglamento">
+  <div style="padding:1rem;max-width:900px;margin:0 auto;">
+    <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;margin-bottom:1rem;color:var(--accent);" id="reglamento-titulo">📋 Reglamento 2026</h2>
+    <div id="reglamento-cont" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:2rem;text-align:center;">
+      <div style="font-size:48px;margin-bottom:1rem;">📄</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:.5rem;" id="reglamento-nombre">Seleccioná una categoría</div>
+      <div style="font-size:13px;color:var(--muted);" id="reglamento-sub">El reglamento estará disponible cuando elijas una categoría.</div>
+      <div id="reglamento-link" style="margin-top:1.5rem;display:none;">
+        <a id="reglamento-pdf-link" href="#" target="_blank"
+           style="display:inline-flex;align-items:center;gap:.5rem;background:var(--accent);color:#111;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;padding:.6rem 1.25rem;border-radius:6px;text-decoration:none;">
+          📥 Descargar PDF
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
 
+<div class="page" id="page-foro" style="display:none;flex-direction:column;">
+  <div id="foro-msgs" style="flex:1;overflow-y:auto;"></div>
+  <div id="foro-input-area" style="border-top:2px solid #1a1a1a;padding:.5rem 1rem;background:var(--surface);flex-shrink:0;"></div>
 </div>
 
-</main>
-
-<!-- DERECHA -->
-<aside class="right">
-
-<div class="card">
-<h3>Tabla Primera Nacional</h3>
-
-<div class="rank">
-1. Colón<br>
-2. Atlanta<br>
-3. Quilmes<br>
-4. Morón<br>
-5. Chacarita
+<!-- ══ FICHA MODAL ══ -->
+<div id="ficha-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:flex-start;justify-content:center;overflow-y:auto;padding:1rem;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:780px;margin:auto;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--border);background:var(--surface2);">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px;">FICHA DEL PARTIDO</span>
+      <button onclick="document.getElementById('ficha-modal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div id="ficha-cont" style="padding:1rem;max-height:85vh;overflow-y:auto;"></div>
+  </div>
 </div>
 
-</div>
+<script>
+// ══════════════════════════════════════════════════════
+// SUPABASE — reutilizamos la misma DB del Federal A
+// ⚠️  REEMPLAZÁ estas credenciales por las tuyas si usás un proyecto nuevo
+// ══════════════════════════════════════════════════════
+const SUPA_URL = "https://fnbxddmnotzqoquizfit.supabase.co";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuYnhkZG1ub3R6cW9xdWl6Zml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NzI0NDAsImV4cCI6MjA5MDE0ODQ0MH0.8FdlhqFbf9E1rFH97aQ2Fvp4ArkM9BK-rzwzuvR6-Ec";
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-<div class="card">
-<h3>Goleadores</h3>
+// ══════════════════════════════════════════════════════
+// CONFIGURACIÓN DE CATEGORÍAS
+// Acá agregás o editás cada categoría.
+// "zonas" define los grupos (pueden ser 1 sola zona para torneos únicos).
+// "fixture" y "escudos" se cargan desde Supabase filtrando por categoria_id.
+// "reglamentoPDF" es la URL del PDF en Supabase Storage (o null si no hay).
+// "fases" describe el nombre de la fase actual.
+// ══════════════════════════════════════════════════════
+const CATEGORIAS = {
+  "federal-a": {
+    nombre: "Federal A",
+    temporada: "2026",
+    fase: "Primera Fase",
+    // Para Federal A usamos la lógica original de 4 zonas
+    multiZona: true,
+    zonas: ["Zona A", "Zona B", "Zona C", "Zona D"],
+    zonaColores: {
+      "Zona A": { color: "#cc7733", text: "#f5f5f5", code: "A" },
+      "Zona B": { color: "#e87aaa", text: "#111111", code: "B" },
+      "Zona C": { color: "#ffff33", text: "#111111", code: "C" },
+      "Zona D": { color: "#3366cc", text: "#ffffff", code: "D" },
+    },
+    clasificados: { "Zona A": 5, "Zona B": 4, "Zona C": 4, "Zona D": 4 },
+    totalFechas: 18,
+    // Tabla de Supabase donde está el fixture de esta categoría
+    // Si es null, usa el FIXTURE_HARDCODED de abajo
+    supabaseCategoria: null, // ej: "federal_a" (columna categoria en tu tabla fixture)
+    reglamentoPDF: "https://fnbxddmnotzqoquizfit.supabase.co/storage/v1/object/public/docs/reglamento-federal-a-2026.pdf",
+  },
+  "primera-nacional": {
+    nombre: "Primera Nacional",
+    temporada: "2026",
+    fase: "Zona Campeonato",
+    multiZona: true,
+    zonas: ["Zona A", "Zona B"],
+    zonaColores: {
+      "Zona A": { color: "#3a86ff", text: "#ffffff", code: "A" },
+      "Zona B": { color: "#ff006e", text: "#ffffff", code: "B" },
+    },
+    clasificados: { "Zona A": 8, "Zona B": 8 },
+    totalFechas: 30,
+    supabaseCategoria: "primera_nacional",
+    reglamentoPDF: null,
+  },
+  "primera-b": {
+    nombre: "Primera B Metro",
+    temporada: "2026",
+    fase: "Torneo",
+    multiZona: false,
+    zonas: ["General"],
+    zonaColores: {
+      "General": { color: "#e8c44a", text: "#111", code: "B" },
+    },
+    clasificados: { "General": 4 },
+    totalFechas: 22,
+    supabaseCategoria: "primera_b",
+    reglamentoPDF: null,
+  },
+  "primera-c": {
+    nombre: "Primera C",
+    temporada: "2026",
+    fase: "Torneo",
+    multiZona: false,
+    zonas: ["General"],
+    zonaColores: {
+      "General": { color: "#4caf50", text: "#111", code: "C" },
+    },
+    clasificados: { "General": 4 },
+    totalFechas: 22,
+    supabaseCategoria: "primera_c",
+    reglamentoPDF: null,
+  },
+  "promocional": {
+    nombre: "Promocional Amateur",
+    temporada: "2026",
+    fase: "Primera Fase",
+    multiZona: true,
+    zonas: ["Zona 1", "Zona 2", "Zona 3", "Zona 4"],
+    zonaColores: {
+      "Zona 1": { color: "#ff9800", text: "#111", code: "1" },
+      "Zona 2": { color: "#9c27b0", text: "#fff", code: "2" },
+      "Zona 3": { color: "#009688", text: "#fff", code: "3" },
+      "Zona 4": { color: "#f44336", text: "#fff", code: "4" },
+    },
+    clasificados: { "Zona 1": 4, "Zona 2": 4, "Zona 3": 4, "Zona 4": 4 },
+    totalFechas: 14,
+    supabaseCategoria: "promocional_amateur",
+    reglamentoPDF: null,
+  },
+};
 
-<div class="rank">
-Jugador A - 8<br>
-Jugador B - 7<br>
-Jugador C - 6
-</div>
+// ══════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════════════════════
+let categoriaActual = "federal-a";
+let FIXTURE = {}; // { "Zona X": { "1": [{local, visitante, gl, gv, ...}] } }
+let ESCUDOS = {};
+let PARTIDO_META = {};
+let PLANILLA_CARGADA = {};
+let EQUIPOS_LIST = [];
+let fechaActual = 1;
+let fxZona = "";
+let usuarioActual = null;
+let PERFIL_USUARIO = null;
+let STATS_LOADED = false;
+let _pltCargado = false;
+let _pltData = null;
+let _pltSort = { col: 'nombre', dir: 'asc' };
+let _liveInterval = null;
+let FORO_PAGINA = 0;
+const FORO_POR_PAGINA = 15;
 
-</div>
+// ══════════════════════════════════════════════════════
+// FIXTURE HARDCODED PARA FEDERAL A
+// (copiado del original — para las otras categorías se carga desde Supabase)
+// ══════════════════════════════════════════════════════
+const FIXTURE_FEDERAL_A = {"Zona A":{"1":[{"local":"El Linqueño","visitante":"Sp. Las Parejas","gl":1,"gv":0},{"local":"Independiente (Ch)","visitante":"Atlético Escobar","gl":2,"gv":1},{"local":"Sp. Belgrano","visitante":"9 de Julio (Rafaela)","gl":3,"gv":0},{"local":"Douglas Haig","visitante":"Gimnasia (Ch)","gl":2,"gv":1},{"local":"Defensores (VR)","visitante":"Gimnasia (CDU)","gl":2,"gv":1}],"2":[{"local":"Defensores (VR)","visitante":"El Linqueño","gl":null,"gv":null},{"local":"Gimnasia (CDU)","visitante":"Douglas Haig","gl":null,"gv":null},{"local":"Gimnasia (Ch)","visitante":"Sp. Belgrano","gl":null,"gv":null},{"local":"9 de Julio (Rafaela)","visitante":"Independiente (Ch)","gl":null,"gv":null},{"local":"Atlético Escobar","visitante":"Sp. Las Parejas","gl":null,"gv":null}],"3":[{"local":"El Linqueño","visitante":"Atlético Escobar","gl":null,"gv":null},{"local":"Sp. Las Parejas","visitante":"9 de Julio (Rafaela)","gl":null,"gv":null},{"local":"Independiente (Ch)","visitante":"Gimnasia (Ch)","gl":null,"gv":null},{"local":"Sp. Belgrano","visitante":"Gimnasia (CDU)","gl":null,"gv":null},{"local":"Douglas Haig","visitante":"Defensores (VR)","gl":null,"gv":null}],"4":[{"local":"Douglas Haig","visitante":"El Linqueño","gl":null,"gv":null},{"local":"Defensores (VR)","visitante":"Sp. Belgrano","gl":null,"gv":null},{"local":"Gimnasia (CDU)","visitante":"Independiente (Ch)","gl":null,"gv":null},{"local":"Gimnasia (Ch)","visitante":"Sp. Las Parejas","gl":null,"gv":null},{"local":"9 de Julio (Rafaela)","visitante":"Atlético Escobar","gl":null,"gv":null}],"5":[{"local":"El Linqueño","visitante":"9 de Julio (Rafaela)","gl":null,"gv":null},{"local":"Sp. Las Parejas","visitante":"Gimnasia (CDU)","gl":null,"gv":null},{"local":"Atlético Escobar","visitante":"Gimnasia (Ch)","gl":null,"gv":null},{"local":"Independiente (Ch)","visitante":"Defensores (VR)","gl":null,"gv":null},{"local":"Sp. Belgrano","visitante":"Douglas Haig","gl":null,"gv":null}],"6":[{"local":"Sp. Belgrano","visitante":"El Linqueño","gl":null,"gv":null},{"local":"Douglas Haig","visitante":"Independiente (Ch)","gl":null,"gv":null},{"local":"Defensores (VR)","visitante":"Sp. Las Parejas","gl":null,"gv":null},{"local":"Gimnasia (CDU)","visitante":"Atlético Escobar","gl":null,"gv":null},{"local":"Gimnasia (Ch)","visitante":"9 de Julio (Rafaela)","gl":null,"gv":null}],"7":[{"local":"El Linqueño","visitante":"Gimnasia (Ch)","gl":null,"gv":null},{"local":"9 de Julio (Rafaela)","visitante":"Gimnasia (CDU)","gl":null,"gv":null},{"local":"Atlético Escobar","visitante":"Defensores (VR)","gl":null,"gv":null},{"local":"Sp. Las Parejas","visitante":"Douglas Haig","gl":null,"gv":null},{"local":"Independiente (Ch)","visitante":"Sp. Belgrano","gl":null,"gv":null}],"8":[{"local":"Independiente (Ch)","visitante":"El Linqueño","gl":null,"gv":null},{"local":"Sp. Belgrano","visitante":"Sp. Las Parejas","gl":null,"gv":null},{"local":"Douglas Haig","visitante":"Atlético Escobar","gl":null,"gv":null},{"local":"Defensores (VR)","visitante":"9 de Julio (Rafaela)","gl":null,"gv":null},{"local":"Gimnasia (CDU)","visitante":"Gimnasia (Ch)","gl":null,"gv":null}],"9":[{"local":"El Linqueño","visitante":"Gimnasia (CDU)","gl":null,"gv":null},{"local":"Gimnasia (Ch)","visitante":"Defensores (VR)","gl":null,"gv":null},{"local":"9 de Julio (Rafaela)","visitante":"Douglas Haig","gl":null,"gv":null},{"local":"Atlético Escobar","visitante":"Sp. Belgrano","gl":null,"gv":null},{"local":"Sp. Las Parejas","visitante":"Independiente (Ch)","gl":null,"gv":null}],"10":[{"local":"Sp. Las Parejas","visitante":"El Linqueño","gl":null,"gv":null},{"local":"Atlético Escobar","visitante":"Independiente (Ch)","gl":null,"gv":null},{"local":"9 de Julio (Rafaela)","visitante":"Sp. Belgrano","gl":null,"gv":null},{"local":"Gimnasia (Ch)","visitante":"Douglas Haig","gl":null,"gv":null},{"local":"Gimnasia (CDU)","visitante":"Defensores (VR)","gl":null,"gv":null}],"11":[{"local":"El Linqueño","visitante":"Defensores (VR)","gl":null,"gv":null},{"local":"Douglas Haig","visitante":"Gimnasia (CDU)","gl":null,"gv":null},{"local":"Sp. Belgrano","visitante":"Gimnasia (Ch)","gl":null,"gv":null},{"local":"Independiente (Ch)","visitante":"9 de Julio (Rafaela)","gl":null,"gv":null},{"local":"Sp. Las Parejas","visitante":"Atlético Escobar","gl":null,"gv":null}],"12":[{"local":"Atlético Escobar","visitante":"El Linqueño","gl":null,"gv":null},{"local":"9 de Julio (Rafaela)","visitante":"Sp. Las Parejas","gl":null,"gv":null},{"local":"Gimnasia (Ch)","visitante":"Independiente (Ch)","gl":null,"gv":null},{"local":"Gimnasia (CDU)","visitante":"Sp. Belgrano","gl":null,"gv":null},{"local":"Defensores (VR)","visitante":"Douglas Haig","gl":null,"gv":null}],"13":[{"local":"El Linqueño","visitante":"Douglas Haig","gl":null,"gv":null},{"local":"Sp. Belgrano","visitante":"Defensores (VR)","gl":null,"gv":null},{"local":"Independiente (Ch)","visitante":"Gimnasia (CDU)","gl":null,"gv":null},{"local":"Sp. Las Parejas","visitante":"Gimnasia (Ch)","gl":null,"gv":null},{"local":"Atlético Escobar","visitante":"9 de Julio (Rafaela)","gl":null,"gv":null}],"14":[{"local":"9 de Julio (Rafaela)","visitante":"El Linqueño","gl":null,"gv":null},{"local":"Gimnasia (CDU)","visitante":"Sp. Las Parejas","gl":null,"gv":null},{"local":"Gimnasia (Ch)","visitante":"Atlético Escobar","gl":null,"gv":null},{"local":"Defensores (VR)","visitante":"Independiente (Ch)","gl":null,"gv":null},{"local":"Douglas Haig","visitante":"Sp. Belgrano","gl":null,"gv":null}],"15":[{"local":"El Linqueño","visitante":"Sp. Belgrano","gl":null,"gv":null},{"local":"Independiente (Ch)","visitante":"Douglas Haig","gl":null,"gv":null},{"local":"Sp. Las Parejas","visitante":"Defensores (VR)","gl":null,"gv":null},{"local":"Atlético Escobar","visitante":"Gimnasia (CDU)","gl":null,"gv":null},{"local":"9 de Julio (Rafaela)","visitante":"Gimnasia (Ch)","gl":null,"gv":null}],"16":[{"local":"Gimnasia (Ch)","visitante":"El Linqueño","gl":null,"gv":null},{"local":"Gimnasia (CDU)","visitante":"9 de Julio (Rafaela)","gl":null,"gv":null},{"local":"Defensores (VR)","visitante":"Atlético Escobar","gl":null,"gv":null},{"local":"Douglas Haig","visitante":"Sp. Las Parejas","gl":null,"gv":null},{"local":"Sp. Belgrano","visitante":"Independiente (Ch)","gl":null,"gv":null}],"17":[{"local":"El Linqueño","visitante":"Independiente (Ch)","gl":null,"gv":null},{"local":"Sp. Las Parejas","visitante":"Sp. Belgrano","gl":null,"gv":null},{"local":"Atlético Escobar","visitante":"Douglas Haig","gl":null,"gv":null},{"local":"9 de Julio (Rafaela)","visitante":"Defensores (VR)","gl":null,"gv":null},{"local":"Gimnasia (Ch)","visitante":"Gimnasia (CDU)","gl":null,"gv":null}],"18":[{"local":"Gimnasia (CDU)","visitante":"El Linqueño","gl":null,"gv":null},{"local":"Defensores (VR)","visitante":"Gimnasia (Ch)","gl":null,"gv":null},{"local":"Douglas Haig","visitante":"9 de Julio (Rafaela)","gl":null,"gv":null},{"local":"Sp. Belgrano","visitante":"Atlético Escobar","gl":null,"gv":null},{"local":"Independiente (Ch)","visitante":"Sp. Las Parejas","gl":null,"gv":null}]},"Zona B":{"1":[{"local":"Sarmiento (R)","visitante":"Juv. Antoniana","gl":1,"gv":3},{"local":"Boca Unidos","visitante":"Sarmiento (LB)","gl":3,"gv":1},{"local":"Tucumán Central","visitante":"Bartolomé Mitre","gl":1,"gv":0},{"local":"San Martín (F)","visitante":"Defensores (PV)","gl":2,"gv":1}],"2":[{"local":"Defensores (PV)","visitante":"Tucumán Central","gl":null,"gv":null},{"local":"Bartolomé Mitre","visitante":"Boca Unidos","gl":null,"gv":null},{"local":"Sarmiento (LB)","visitante":"Sarmiento (R)","gl":null,"gv":null},{"local":"Juv. Antoniana","visitante":"Sol de América (F)","gl":null,"gv":null}],"3":[{"local":"Sol de América (F)","visitante":"Sarmiento (LB)","gl":null,"gv":null},{"local":"Sarmiento (R)","visitante":"Bartolomé Mitre","gl":null,"gv":null},{"local":"Boca Unidos","visitante":"Defensores (PV)","gl":null,"gv":null},{"local":"Tucumán Central","visitante":"San Martín (F)","gl":null,"gv":null}],"4":[{"local":"San Martín (F)","visitante":"Boca Unidos","gl":null,"gv":null},{"local":"Defensores (PV)","visitante":"Sarmiento (R)","gl":null,"gv":null},{"local":"Bartolomé Mitre","visitante":"Sol de América (F)","gl":null,"gv":null},{"local":"Sarmiento (LB)","visitante":"Juv. Antoniana","gl":null,"gv":null}],"5":[{"local":"Juv. Antoniana","visitante":"Bartolomé Mitre","gl":null,"gv":null},{"local":"Sol de América (F)","visitante":"Defensores (PV)","gl":null,"gv":null},{"local":"Sarmiento (R)","visitante":"San Martín (F)","gl":null,"gv":null},{"local":"Boca Unidos","visitante":"Tucumán Central","gl":null,"gv":null}],"6":[{"local":"Tucumán Central","visitante":"Sarmiento (R)","gl":null,"gv":null},{"local":"San Martín (F)","visitante":"Sol de América (F)","gl":null,"gv":null},{"local":"Defensores (PV)","visitante":"Juv. Antoniana","gl":null,"gv":null},{"local":"Bartolomé Mitre","visitante":"Sarmiento (LB)","gl":null,"gv":null}],"7":[{"local":"Sarmiento (LB)","visitante":"Defensores (PV)","gl":null,"gv":null},{"local":"Juv. Antoniana","visitante":"San Martín (F)","gl":null,"gv":null},{"local":"Sol de América (F)","visitante":"Tucumán Central","gl":null,"gv":null},{"local":"Sarmiento (R)","visitante":"Boca Unidos","gl":null,"gv":null}],"8":[{"local":"Boca Unidos","visitante":"Sol de América (F)","gl":null,"gv":null},{"local":"Tucumán Central","visitante":"Juv. Antoniana","gl":null,"gv":null},{"local":"San Martín (F)","visitante":"Sarmiento (LB)","gl":null,"gv":null},{"local":"Defensores (PV)","visitante":"Bartolomé Mitre","gl":null,"gv":null}],"9":[{"local":"Bartolomé Mitre","visitante":"San Martín (F)","gl":null,"gv":null},{"local":"Sarmiento (LB)","visitante":"Tucumán Central","gl":null,"gv":null},{"local":"Juv. Antoniana","visitante":"Boca Unidos","gl":null,"gv":null},{"local":"Sol de América (F)","visitante":"Sarmiento (R)","gl":null,"gv":null}],"10":[{"local":"Juv. Antoniana","visitante":"Sarmiento (R)","gl":null,"gv":null},{"local":"Sarmiento (LB)","visitante":"Boca Unidos","gl":null,"gv":null},{"local":"Bartolomé Mitre","visitante":"Tucumán Central","gl":null,"gv":null},{"local":"Defensores (PV)","visitante":"San Martín (F)","gl":null,"gv":null}],"11":[{"local":"Tucumán Central","visitante":"Defensores (PV)","gl":null,"gv":null},{"local":"Boca Unidos","visitante":"Bartolomé Mitre","gl":null,"gv":null},{"local":"Sarmiento (R)","visitante":"Sarmiento (LB)","gl":null,"gv":null},{"local":"Sol de América (F)","visitante":"Juv. Antoniana","gl":null,"gv":null}],"12":[{"local":"Sarmiento (LB)","visitante":"Sol de América (F)","gl":null,"gv":null},{"local":"Bartolomé Mitre","visitante":"Sarmiento (R)","gl":null,"gv":null},{"local":"Defensores (PV)","visitante":"Boca Unidos","gl":null,"gv":null},{"local":"San Martín (F)","visitante":"Tucumán Central","gl":null,"gv":null}],"13":[{"local":"Boca Unidos","visitante":"San Martín (F)","gl":null,"gv":null},{"local":"Sarmiento (R)","visitante":"Defensores (PV)","gl":null,"gv":null},{"local":"Sol de América (F)","visitante":"Bartolomé Mitre","gl":null,"gv":null},{"local":"Juv. Antoniana","visitante":"Sarmiento (LB)","gl":null,"gv":null}],"14":[{"local":"Bartolomé Mitre","visitante":"Juv. Antoniana","gl":null,"gv":null},{"local":"Defensores (PV)","visitante":"Sol de América (F)","gl":null,"gv":null},{"local":"San Martín (F)","visitante":"Sarmiento (R)","gl":null,"gv":null},{"local":"Tucumán Central","visitante":"Boca Unidos","gl":null,"gv":null}],"15":[{"local":"Sarmiento (R)","visitante":"Tucumán Central","gl":null,"gv":null},{"local":"Sol de América (F)","visitante":"San Martín (F)","gl":null,"gv":null},{"local":"Juv. Antoniana","visitante":"Defensores (PV)","gl":null,"gv":null},{"local":"Sarmiento (LB)","visitante":"Bartolomé Mitre","gl":null,"gv":null}],"16":[{"local":"Defensores (PV)","visitante":"Sarmiento (LB)","gl":null,"gv":null},{"local":"San Martín (F)","visitante":"Juv. Antoniana","gl":null,"gv":null},{"local":"Tucumán Central","visitante":"Sol de América (F)","gl":null,"gv":null},{"local":"Boca Unidos","visitante":"Sarmiento (R)","gl":null,"gv":null}],"17":[{"local":"Sol de América (F)","visitante":"Boca Unidos","gl":null,"gv":null},{"local":"Juv. Antoniana","visitante":"Tucumán Central","gl":null,"gv":null},{"local":"Sarmiento (LB)","visitante":"San Martín (F)","gl":null,"gv":null},{"local":"Bartolomé Mitre","visitante":"Defensores (PV)","gl":null,"gv":null}],"18":[{"local":"San Martín (F)","visitante":"Bartolomé Mitre","gl":null,"gv":null},{"local":"Tucumán Central","visitante":"Sarmiento (LB)","gl":null,"gv":null},{"local":"Boca Unidos","visitante":"Juv. Antoniana","gl":null,"gv":null},{"local":"Sarmiento (R)","visitante":"Sol de América (F)","gl":null,"gv":null}]},"Zona C":{"1":[{"local":"Costa Brava","visitante":"FADEP","gl":3,"gv":0},{"local":"Huracán LH","visitante":"Argentino (MM)","gl":0,"gv":0},{"local":"San Martín (M)","visitante":"Juv. Unida (SL)","gl":0,"gv":0},{"local":"Atenas (RC)","visitante":"Cipolletti","gl":3,"gv":1}],"2":[{"local":"Cipolletti","visitante":"San Martín (M)","gl":null,"gv":null},{"local":"Juv. Unida (SL)","visitante":"Huracán LH","gl":null,"gv":null},{"local":"Argentino (MM)","visitante":"Costa Brava","gl":null,"gv":null},{"local":"FADEP","visitante":"Dep. Rincón","gl":null,"gv":null}],"3":[{"local":"Dep. Rincón","visitante":"Argentino (MM)","gl":null,"gv":null},{"local":"Costa Brava","visitante":"Juv. Unida (SL)","gl":null,"gv":null},{"local":"Huracán LH","visitante":"Cipolletti","gl":null,"gv":null},{"local":"San Martín (M)","visitante":"Atenas (RC)","gl":null,"gv":null}],"4":[{"local":"Atenas (RC)","visitante":"Huracán LH","gl":null,"gv":null},{"local":"Cipolletti","visitante":"Costa Brava","gl":null,"gv":null},{"local":"Juv. Unida (SL)","visitante":"Dep. Rincón","gl":null,"gv":null},{"local":"Argentino (MM)","visitante":"FADEP","gl":null,"gv":null}],"5":[{"local":"FADEP","visitante":"Juv. Unida (SL)","gl":null,"gv":null},{"local":"Dep. Rincón","visitante":"Cipolletti","gl":null,"gv":null},{"local":"Costa Brava","visitante":"Atenas (RC)","gl":null,"gv":null},{"local":"Huracán LH","visitante":"San Martín (M)","gl":null,"gv":null}],"6":[{"local":"San Martín (M)","visitante":"Costa Brava","gl":null,"gv":null},{"local":"Atenas (RC)","visitante":"Dep. Rincón","gl":null,"gv":null},{"local":"Cipolletti","visitante":"FADEP","gl":null,"gv":null},{"local":"Juv. Unida (SL)","visitante":"Argentino (MM)","gl":null,"gv":null}],"7":[{"local":"Argentino (MM)","visitante":"Cipolletti","gl":null,"gv":null},{"local":"FADEP","visitante":"Atenas (RC)","gl":null,"gv":null},{"local":"Dep. Rincón","visitante":"San Martín (M)","gl":null,"gv":null},{"local":"Costa Brava","visitante":"Huracán LH","gl":null,"gv":null}],"8":[{"local":"Huracán LH","visitante":"Dep. Rincón","gl":null,"gv":null},{"local":"San Martín (M)","visitante":"FADEP","gl":null,"gv":null},{"local":"Atenas (RC)","visitante":"Argentino (MM)","gl":null,"gv":null},{"local":"Cipolletti","visitante":"Juv. Unida (SL)","gl":null,"gv":null}],"9":[{"local":"Juv. Unida (SL)","visitante":"Atenas (RC)","gl":null,"gv":null},{"local":"Argentino (MM)","visitante":"San Martín (M)","gl":null,"gv":null},{"local":"FADEP","visitante":"Huracán LH","gl":null,"gv":null},{"local":"Dep. Rincón","visitante":"Costa Brava","gl":null,"gv":null}],"10":[{"local":"FADEP","visitante":"Costa Brava","gl":null,"gv":null},{"local":"Argentino (MM)","visitante":"Huracán LH","gl":null,"gv":null},{"local":"Juv. Unida (SL)","visitante":"San Martín (M)","gl":null,"gv":null},{"local":"Cipolletti","visitante":"Atenas (RC)","gl":null,"gv":null}],"11":[{"local":"San Martín (M)","visitante":"Cipolletti","gl":null,"gv":null},{"local":"Huracán LH","visitante":"Juv. Unida (SL)","gl":null,"gv":null},{"local":"Costa Brava","visitante":"Argentino (MM)","gl":null,"gv":null},{"local":"Dep. Rincón","visitante":"FADEP","gl":null,"gv":null}],"12":[{"local":"Argentino (MM)","visitante":"Dep. Rincón","gl":null,"gv":null},{"local":"Juv. Unida (SL)","visitante":"Costa Brava","gl":null,"gv":null},{"local":"Cipolletti","visitante":"Huracán LH","gl":null,"gv":null},{"local":"Atenas (RC)","visitante":"San Martín (M)","gl":null,"gv":null}],"13":[{"local":"Huracán LH","visitante":"Atenas (RC)","gl":null,"gv":null},{"local":"Costa Brava","visitante":"Cipolletti","gl":null,"gv":null},{"local":"Dep. Rincón","visitante":"Juv. Unida (SL)","gl":null,"gv":null},{"local":"FADEP","visitante":"Argentino (MM)","gl":null,"gv":null}],"14":[{"local":"Juv. Unida (SL)","visitante":"FADEP","gl":null,"gv":null},{"local":"Cipolletti","visitante":"Dep. Rincón","gl":null,"gv":null},{"local":"Atenas (RC)","visitante":"Costa Brava","gl":null,"gv":null},{"local":"San Martín (M)","visitante":"Huracán LH","gl":null,"gv":null}],"15":[{"local":"Costa Brava","visitante":"San Martín (M)","gl":null,"gv":null},{"local":"Dep. Rincón","visitante":"Atenas (RC)","gl":null,"gv":null},{"local":"FADEP","visitante":"Cipolletti","gl":null,"gv":null},{"local":"Argentino (MM)","visitante":"Juv. Unida (SL)","gl":null,"gv":null}],"16":[{"local":"Cipolletti","visitante":"Argentino (MM)","gl":null,"gv":null},{"local":"Atenas (RC)","visitante":"FADEP","gl":null,"gv":null},{"local":"San Martín (M)","visitante":"Dep. Rincón","gl":null,"gv":null},{"local":"Huracán LH","visitante":"Costa Brava","gl":null,"gv":null}],"17":[{"local":"Dep. Rincón","visitante":"Huracán LH","gl":null,"gv":null},{"local":"FADEP","visitante":"San Martín (M)","gl":null,"gv":null},{"local":"Argentino (MM)","visitante":"Atenas (RC)","gl":null,"gv":null},{"local":"Juv. Unida (SL)","visitante":"Cipolletti","gl":null,"gv":null}],"18":[{"local":"Atenas (RC)","visitante":"Juv. Unida (SL)","gl":null,"gv":null},{"local":"San Martín (M)","visitante":"Argentino (MM)","gl":null,"gv":null},{"local":"Huracán LH","visitante":"FADEP","gl":null,"gv":null},{"local":"Costa Brava","visitante":"Dep. Rincón","gl":null,"gv":null}]},"Zona D":{"1":[{"local":"Kimberley","visitante":"Villa Mitre","gl":1,"gv":0},{"local":"Sol de Mayo","visitante":"Germinal","gl":1,"gv":1},{"local":"Gmo. Brown (PM)","visitante":"Santamarina","gl":2,"gv":2},{"local":"Olimpo","visitante":"Alvarado","gl":2,"gv":0}],"2":[{"local":"Alvarado","visitante":"Gmo. Brown (PM)","gl":null,"gv":null},{"local":"Santamarina","visitante":"Sol de Mayo","gl":null,"gv":null},{"local":"Germinal","visitante":"Kimberley","gl":null,"gv":null},{"local":"Villa Mitre","visitante":"Círculo Dep.","gl":null,"gv":null}],"3":[{"local":"Círculo Dep.","visitante":"Germinal","gl":null,"gv":null},{"local":"Kimberley","visitante":"Santamarina","gl":null,"gv":null},{"local":"Sol de Mayo","visitante":"Alvarado","gl":null,"gv":null},{"local":"Gmo. Brown (PM)","visitante":"Olimpo","gl":null,"gv":null}],"4":[{"local":"Olimpo","visitante":"Sol de Mayo","gl":null,"gv":null},{"local":"Alvarado","visitante":"Kimberley","gl":null,"gv":null},{"local":"Santamarina","visitante":"Círculo Dep.","gl":null,"gv":null},{"local":"Germinal","visitante":"Villa Mitre","gl":null,"gv":null}],"5":[{"local":"Villa Mitre","visitante":"Santamarina","gl":null,"gv":null},{"local":"Círculo Dep.","visitante":"Alvarado","gl":null,"gv":null},{"local":"Kimberley","visitante":"Olimpo","gl":null,"gv":null},{"local":"Sol de Mayo","visitante":"Gmo. Brown (PM)","gl":null,"gv":null}],"6":[{"local":"Gmo. Brown (PM)","visitante":"Kimberley","gl":null,"gv":null},{"local":"Olimpo","visitante":"Círculo Dep.","gl":null,"gv":null},{"local":"Alvarado","visitante":"Villa Mitre","gl":null,"gv":null},{"local":"Santamarina","visitante":"Germinal","gl":null,"gv":null}],"7":[{"local":"Germinal","visitante":"Alvarado","gl":null,"gv":null},{"local":"Villa Mitre","visitante":"Olimpo","gl":null,"gv":null},{"local":"Círculo Dep.","visitante":"Gmo. Brown (PM)","gl":null,"gv":null},{"local":"Kimberley","visitante":"Sol de Mayo","gl":null,"gv":null}],"8":[{"local":"Sol de Mayo","visitante":"Círculo Dep.","gl":null,"gv":null},{"local":"Gmo. Brown (PM)","visitante":"Villa Mitre","gl":null,"gv":null},{"local":"Olimpo","visitante":"Germinal","gl":null,"gv":null},{"local":"Alvarado","visitante":"Santamarina","gl":null,"gv":null}],"9":[{"local":"Santamarina","visitante":"Olimpo","gl":null,"gv":null},{"local":"Germinal","visitante":"Gmo. Brown (PM)","gl":null,"gv":null},{"local":"Villa Mitre","visitante":"Sol de Mayo","gl":null,"gv":null},{"local":"Círculo Dep.","visitante":"Kimberley","gl":null,"gv":null}],"10":[{"local":"Villa Mitre","visitante":"Kimberley","gl":null,"gv":null},{"local":"Germinal","visitante":"Sol de Mayo","gl":null,"gv":null},{"local":"Santamarina","visitante":"Gmo. Brown (PM)","gl":null,"gv":null},{"local":"Alvarado","visitante":"Olimpo","gl":null,"gv":null}],"11":[{"local":"Gmo. Brown (PM)","visitante":"Alvarado","gl":null,"gv":null},{"local":"Sol de Mayo","visitante":"Santamarina","gl":null,"gv":null},{"local":"Kimberley","visitante":"Germinal","gl":null,"gv":null},{"local":"Círculo Dep.","visitante":"Villa Mitre","gl":null,"gv":null}],"12":[{"local":"Germinal","visitante":"Círculo Dep.","gl":null,"gv":null},{"local":"Santamarina","visitante":"Kimberley","gl":null,"gv":null},{"local":"Alvarado","visitante":"Sol de Mayo","gl":null,"gv":null},{"local":"Olimpo","visitante":"Gmo. Brown (PM)","gl":null,"gv":null}],"13":[{"local":"Sol de Mayo","visitante":"Olimpo","gl":null,"gv":null},{"local":"Kimberley","visitante":"Alvarado","gl":null,"gv":null},{"local":"Círculo Dep.","visitante":"Santamarina","gl":null,"gv":null},{"local":"Villa Mitre","visitante":"Germinal","gl":null,"gv":null}],"14":[{"local":"Santamarina","visitante":"Villa Mitre","gl":null,"gv":null},{"local":"Alvarado","visitante":"Círculo Dep.","gl":null,"gv":null},{"local":"Olimpo","visitante":"Kimberley","gl":null,"gv":null},{"local":"Gmo. Brown (PM)","visitante":"Sol de Mayo","gl":null,"gv":null}],"15":[{"local":"Kimberley","visitante":"Gmo. Brown (PM)","gl":null,"gv":null},{"local":"Círculo Dep.","visitante":"Olimpo","gl":null,"gv":null},{"local":"Villa Mitre","visitante":"Alvarado","gl":null,"gv":null},{"local":"Germinal","visitante":"Santamarina","gl":null,"gv":null}],"16":[{"local":"Alvarado","visitante":"Germinal","gl":null,"gv":null},{"local":"Olimpo","visitante":"Villa Mitre","gl":null,"gv":null},{"local":"Gmo. Brown (PM)","visitante":"Círculo Dep.","gl":null,"gv":null},{"local":"Sol de Mayo","visitante":"Kimberley","gl":null,"gv":null}],"17":[{"local":"Círculo Dep.","visitante":"Sol de Mayo","gl":null,"gv":null},{"local":"Villa Mitre","visitante":"Gmo. Brown (PM)","gl":null,"gv":null},{"local":"Germinal","visitante":"Olimpo","gl":null,"gv":null},{"local":"Santamarina","visitante":"Alvarado","gl":null,"gv":null}],"18":[{"local":"Olimpo","visitante":"Santamarina","gl":null,"gv":null},{"local":"Gmo. Brown (PM)","visitante":"Germinal","gl":null,"gv":null},{"local":"Sol de Mayo","visitante":"Villa Mitre","gl":null,"gv":null},{"local":"Kimberley","visitante":"Círculo Dep.","gl":null,"gv":null}]}};
 
-<div class="card">
-<h3>Sponsor</h3>
+// ══════════════════════════════════════════════════════
+// SELECCIÓN DE CATEGORÍA
+// ══════════════════════════════════════════════════════
+async function selCategoria(id, el) {
+  if (id === categoriaActual && FIXTURE && Object.keys(FIXTURE).length) return;
+  categoriaActual = id;
 
-<div class="rank">
-Tu negocio acá.
-</div>
+  // Update cat-bar UI
+  document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
 
-</div>
+  const cat = CATEGORIAS[id];
+  if (!cat) return;
 
-</aside>
+  // Update logo subtitle
+  document.getElementById('logo-cat').textContent = `${cat.nombre} · ${cat.temporada}`;
 
-</div>
+  // Reset state
+  FIXTURE = {};
+  ESCUDOS = {};
+  PARTIDO_META = {};
+  PLANILLA_CARGADA = {};
+  EQUIPOS_LIST = [];
+  STATS_LOADED = false;
+  _pltCargado = false;
+  _pltData = null;
+  fechaActual = 1;
+  fxZona = cat.zonas[0];
 
-<footer>
-Instagram: @FMENASCENSO
-</footer>
+  // Update reglamento page
+  document.getElementById('reglamento-titulo').textContent = `📋 Reglamento ${cat.nombre} ${cat.temporada}`;
+  document.getElementById('reglamento-nombre').textContent = `${cat.nombre} ${cat.temporada}`;
+  if (cat.reglamentoPDF) {
+    document.getElementById('reglamento-sub').textContent = 'Descargá el reglamento oficial del torneo';
+    document.getElementById('reglamento-pdf-link').href = cat.reglamentoPDF;
+    document.getElementById('reglamento-link').style.display = '';
+  } else {
+    document.getElementById('reglamento-sub').textContent = 'El reglamento de esta categoría aún no está disponible.';
+    document.getElementById('reglamento-link').style.display = 'none';
+  }
 
+  // Show loading state
+  document.getElementById('inicio-landing').style.display = 'none';
+  document.getElementById('inicio-cat-content').style.display = '';
+  ['partidos-cont','tablas-zona-a','tablas-zona-b','tablas-zona-c','tablas-zona-d'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<div style="padding:2rem;text-align:center;color:#555;font-size:13px;">Cargando...</div>';
+  });
+  document.getElementById('cont-quintos').innerHTML = '';
+  document.getElementById('cont-goleadores-resumen').innerHTML = '';
+  document.getElementById('cont-2dafase').innerHTML = '';
+
+  // Navigate to inicio
+  const primerNi = document.querySelector('.ni');
+  goPage('inicio', primerNi);
+
+  // Load data
+  await cargarDatosCategoria(id, cat);
+}
+
+async function cargarDatosCategoria(id, cat) {
+  // Federal A: usa fixture hardcoded + Supabase para resultados
+  if (id === 'federal-a') {
+    FIXTURE = JSON.parse(JSON.stringify(FIXTURE_FEDERAL_A));
+    await cargarEscudos();
+    await cargarPartidosDesdeDB_FederalA();
+    const f = fechaInteligente();
+    fechaActual = f;
+    renderPartidos(f);
+    renderTablas();
+    renderSegundaFase();
+    renderGoleadoresResumen();
+    iniciarPollingEnVivo();
+    return;
+  }
+
+  // Otras categorías: cargar fixture desde Supabase filtrando por categoria
+  // Construir fixture vacío basado en zonas de la categoría
+  cat.zonas.forEach(z => { FIXTURE[z] = {}; for (let f = 1; f <= cat.totalFechas; f++) FIXTURE[z][String(f)] = []; });
+
+  try {
+    await cargarEscudos(cat.supabaseCategoria);
+
+    // Intentar cargar fixture de Supabase (tabla fixture con columna categoria)
+    const { data: fixtureData } = await sb
+      .from('fixture')
+      .select('*')
+      .eq('categoria', cat.supabaseCategoria);
+
+    if (fixtureData && fixtureData.length > 0) {
+      fixtureData.forEach(p => {
+        const zona = p.zona || cat.zonas[0];
+        const fecha = String(p.fecha);
+        if (!FIXTURE[zona]) FIXTURE[zona] = {};
+        if (!FIXTURE[zona][fecha]) FIXTURE[zona][fecha] = [];
+        FIXTURE[zona][fecha].push({
+          local: p.equipo_local,
+          visitante: p.equipo_visitante,
+          gl: p.goles_local,
+          gv: p.goles_visitante,
+          estado: p.estado,
+          minuto_actual: p.minuto_actual,
+        });
+        const key = `${zona}_${p.fecha}_${p.equipo_local}_${p.equipo_visitante}`;
+        if (p.dia || p.hora || p.stream_url || p.estadio || p.arbitro) {
+          PARTIDO_META[key] = { dia: p.dia || '', hora: p.hora || '', stream: p.stream_url || '', estadio: p.estadio || '', arbitro: p.arbitro || '' };
+        }
+      });
+    } else {
+      // Sin datos en Supabase — mostrar placeholder
+      mostrarPlaceholderCategoria(cat);
+      return;
+    }
+  } catch (e) {
+    console.error('Error cargando categoría', id, e);
+    mostrarPlaceholderCategoria(cat);
+    return;
+  }
+
+  const f = fechaInteligente();
+  fechaActual = f;
+  renderPartidos(f);
+  renderTablas();
+}
+
+function mostrarPlaceholderCategoria(cat) {
+  document.getElementById('partidos-cont').innerHTML = `
+    <div class="placeholder" style="margin-top:1rem;">
+      <div class="ph-icon">🚧</div>
+      <div class="ph-title">${cat.nombre} — Próximamente</div>
+      <div class="ph-sub">Los datos de esta categoría se están cargando.<br>Volvé pronto o ayudanos cargando los fixtures en el panel admin.</div>
+    </div>`;
+  ['tablas-zona-a','tablas-zona-b','tablas-zona-c','tablas-zona-d'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.innerHTML = '';
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+function getZonas() { return CATEGORIAS[categoriaActual]?.zonas || []; }
+function getCat() { return CATEGORIAS[categoriaActual]; }
+function zonaConfig(z) {
+  const c = getCat();
+  return c?.zonaColores?.[z] || { color: '#888', text: '#fff', code: z.replace('Zona ', '') };
+}
+function getClasificados(z) { return getCat()?.clasificados?.[z] || 4; }
+function getTotalFechas() { return getCat()?.totalFechas || 18; }
+
+function ini(n) { return n.split(/\s+/).map(p => p[0]).join('').substring(0, 2).toUpperCase(); }
+function escudoHTML(nombre, size = 'esc') {
+  const url = ESCUDOS[nombre];
+  return url
+    ? `<div class="${size}"><img src="${url}" alt="${nombre}" onerror="this.style.display='none'"></div>`
+    : `<div class="${size}" style="font-size:10px;font-weight:700;color:#666;">${ini(nombre)}</div>`;
+}
+function horaOrden(h) { if (!h) return 9999; const m = String(h).match(/^(\d{1,2}):(\d{2})$/); return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : 9999; }
+function diaKey(d) { return d ? String(d).slice(0, 10) : 'sin_dia'; }
+function diaTitulo(d) {
+  if (!d) return { dia: 'Sin día confirmado', fecha: '' };
+  const dt = new Date(String(d) + 'T00:00:00');
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const p = String(d).split('-');
+  return { dia: dias[dt.getDay()], fecha: p.length >= 3 ? `${p[2]}/${p[1]}` : '' };
+}
+function getMetaKey(z, f, l, v) { return `${z}_${f}_${l}_${v}`; }
+
+function fechaInteligente() {
+  const zonas = getZonas();
+  const total = getTotalFechas();
+  for (let f = 1; f <= total; f++) {
+    const tieneProg = zonas.some(z => (FIXTURE[z]?.[String(f)] || []).some(m => {
+      const key = `${z}_${f}_${m.local}_${m.visitante}`;
+      const meta = PARTIDO_META[key];
+      return m.gl === null && (meta?.dia || meta?.hora);
+    }));
+    if (tieneProg) return f;
+  }
+  let ultima = 1;
+  for (let f = 1; f <= total; f++) {
+    if (zonas.some(z => (FIXTURE[z]?.[String(f)] || []).some(m => m.gl !== null))) ultima = f;
+  }
+  return ultima;
+}
+
+// ══════════════════════════════════════════════════════
+// CARGA ESCUDOS
+// ══════════════════════════════════════════════════════
+async function cargarEscudos(categoria = null) {
+  try {
+    let query = sb.from('equipos').select('id,nombre,escudo_url').order('nombre');
+    if (categoria) query = query.eq('categoria', categoria);
+    const { data } = await query;
+    if (!data) return;
+    EQUIPOS_LIST = data.map(e => ({ id: e.id, nombre: e.nombre }));
+    data.forEach(e => { if (e.escudo_url) ESCUDOS[e.nombre] = e.escudo_url; });
+  } catch (e) {}
+}
+
+// ══════════════════════════════════════════════════════
+// CARGA DATOS FEDERAL A (lógica original)
+// ══════════════════════════════════════════════════════
+async function cargarPartidosDesdeDB_FederalA() {
+  try {
+    const { data: fixtureData } = await sb.from('fixture').select('zona,fecha,equipo_local,equipo_visitante,goles_local,goles_visitante,ht_local,ht_visitante,dia,hora,stream_url,estadio,arbitro,estado,fotmob_url,minuto_actual');
+    if (fixtureData) {
+      window._FIXTURE_RAW = fixtureData;
+      fixtureData.forEach(p => {
+        if (!p.zona || !p.fecha) return;
+        const ms = FIXTURE[p.zona]?.[String(p.fecha)];
+        if (!ms) return;
+        const match = ms.find(m => m.local === p.equipo_local && m.visitante === p.equipo_visitante);
+        if (!match) return;
+        if (p.goles_local !== null && p.goles_visitante !== null) { match.gl = p.goles_local; match.gv = p.goles_visitante; }
+        if (p.estado) match.estado = p.estado;
+        if (p.minuto_actual) match.minuto_actual = p.minuto_actual;
+        if (p.dia || p.hora || p.stream_url || p.estadio || p.arbitro) {
+          const key = `${p.zona}_${p.fecha}_${p.equipo_local}_${p.equipo_visitante}`;
+          PARTIDO_META[key] = { dia: p.dia || '', hora: p.hora || '', stream: p.stream_url || '', estadio: p.estadio || '', arbitro: p.arbitro || '' };
+        }
+      });
+    }
+    // Planillas cargadas
+    let allPl = [], plFrom = 0;
+    while (true) {
+      const { data: b } = await sb.from('planillas').select('partido_id').range(plFrom, plFrom + 999);
+      if (!b?.length) break;
+      allPl = allPl.concat(b);
+      if (b.length < 1000) break;
+      plFrom += 1000;
+    }
+    if (allPl.length) {
+      const ids = [...new Set(allPl.map(x => x.partido_id).filter(Boolean))];
+      const { data: pp } = await sb.from('partidos').select('id,zona,fecha,equipo_local_nombre,equipo_visitante_nombre').in('id', ids);
+      pp?.forEach(p => { PLANILLA_CARGADA[`${p.zona}_${p.fecha}_${p.equipo_local_nombre}_${p.equipo_visitante_nombre}`] = true; });
+    }
+  } catch (e) { console.log('Sin conexión a BD', e); }
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER PARTIDOS
+// ══════════════════════════════════════════════════════
+function renderPartidos(f) {
+  document.getElementById('fnum-txt').textContent = 'Fecha ' + f;
+  document.getElementById('fsub-txt').textContent = `${getCat()?.fase || 'Primera Fase'} — ${getCat()?.temporada || '2026'}`;
+  const total = getTotalFechas();
+  document.getElementById('btn-prev').classList.toggle('dis', f <= 1);
+  document.getElementById('btn-next').classList.toggle('dis', f >= total);
+
+  const zonas = getZonas();
+  const rows = [];
+  zonas.forEach(z => {
+    (FIXTURE[z]?.[String(f)] || []).forEach(m => {
+      const meta = PARTIDO_META[getMetaKey(z, f, m.local, m.visitante)] || {};
+      rows.push({ zona: z, m, meta });
+    });
+  });
+  rows.sort((a, b) => {
+    const ad = a.meta.dia || '9999-99-99', bd = b.meta.dia || '9999-99-99';
+    const kd = ad.localeCompare(bd); if (kd !== 0) return kd;
+    const kh = horaOrden(a.meta.hora) - horaOrden(b.meta.hora); if (kh !== 0) return kh;
+    return a.zona.localeCompare(b.zona);
+  });
+
+  let html = '', diaActual = null;
+  rows.forEach(({ zona, m, meta }) => {
+    const fichaKey = `${zona}_${f}_${m.local}_${m.visitante}`;
+    const tienePlanilla = !!PLANILLA_CARGADA[fichaKey];
+    const esEnVivo = m.estado === 'en_curso';
+    const liveClass = esEnVivo ? ' partido-live' : '';
+    const dKey = diaKey(meta.dia);
+    if (dKey !== diaActual) {
+      diaActual = dKey;
+      const t = diaTitulo(meta.dia);
+      html += t.fecha
+        ? `<div class="dia-lbl"><span class="dia-week">${t.dia} - </span><span class="dia-date">${t.fecha}</span></div>`
+        : `<div class="dia-lbl"><span class="dia-week">${t.dia}</span></div>`;
+    }
+    let centro;
+    if (m.gl !== null) {
+      centro = `<div class="${esEnVivo ? 'score score-live' : 'score'}">${m.gl}<span class="sep">—</span>${m.gv}</div>`;
+    } else if (meta.hora) {
+      centro = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;color:var(--accent);text-align:center;">${meta.hora}</div>`;
+    } else {
+      centro = `<div class="vs">VS</div>`;
+    }
+    const zc = zonaConfig(zona);
+    const streamBtn = meta.stream
+      ? `<a href="${meta.stream}" target="_blank" class="stream-btn" title="Ver transmisión"><svg width="15" height="15" viewBox="0 0 24 24" fill="#e8453a"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg></a>`
+      : `<div style="width:32px;flex-shrink:0"></div>`;
+    const fichaBtn = m.gl !== null
+      ? tienePlanilla
+        ? `<div class="ficha-btn" onclick="verFicha('${fichaKey}',true)" title="Ver ficha">📄</div>`
+        : `<div class="ficha-btn" style="opacity:.35;cursor:default;filter:grayscale(1);" title="Sin planilla">📄</div>`
+      : `<div style="width:32px;flex-shrink:0"></div>`;
+
+    html += `<div class="partido-wrap">
+      <div style="display:flex;align-items:stretch;gap:.4rem">
+        <div class="partido topo-dia${liveClass}" style="flex:1;border-left-color:${zc.color};">
+          <div class="eq"><span class="grp-pill" style="background:${zc.color};color:${zc.text};">${zc.code}</span>${escudoHTML(m.local)}<div class="eqn">${m.local}</div></div>
+          <div class="res">${centro}</div>
+          <div class="eq vis">${escudoHTML(m.visitante)}<div class="eqn">${m.visitante}</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.3rem;justify-content:center">${streamBtn}${fichaBtn}</div>
+      </div>
+    </div>`;
+  });
+  if (!html) html = `<div style="padding:2rem;color:#444;font-size:13px;text-align:center;">Sin partidos para esta fecha.</div>`;
+  document.getElementById('partidos-cont').innerHTML = html;
+}
+
+function cambiar(d) {
+  const n = fechaActual + d;
+  const total = getTotalFechas();
+  if (n < 1 || n > total) return;
+  fechaActual = n;
+  renderPartidos(fechaActual);
+}
+
+function toggleFechaPicker() {
+  const picker = document.getElementById('fecha-picker');
+  const grid = document.getElementById('fecha-picker-grid');
+  if (!picker) return;
+  if (grid && !grid.children.length) {
+    const total = getTotalFechas();
+    grid.innerHTML = Array.from({ length: total }, (_, i) => {
+      const n = i + 1;
+      return `<div onclick="irAFecha(${n})" id="fp-${n}" style="text-align:center;padding:.3rem .2rem;border-radius:4px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;background:var(--surface2);border:1px solid var(--border);color:${n === fechaActual ? 'var(--accent)' : 'var(--text)'};border-color:${n === fechaActual ? 'var(--accent)' : 'var(--border)'};">${n}</div>`;
+    }).join('');
+  }
+  picker.style.display = (picker.style.display === 'none' || !picker.style.display) ? 'block' : 'none';
+}
+function irAFecha(n) {
+  document.getElementById('fecha-picker').style.display = 'none';
+  document.getElementById('fecha-picker-grid').innerHTML = '';
+  if (n < 1 || n > getTotalFechas()) return;
+  fechaActual = n;
+  renderPartidos(n);
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.fi')) { const p = document.getElementById('fecha-picker'); if (p) p.style.display = 'none'; }
+});
+
+// ══════════════════════════════════════════════════════
+// TABLAS
+// ══════════════════════════════════════════════════════
+function calcTabla(zona) {
+  const eq = {};
+  const allTeams = new Set();
+  const total = getTotalFechas();
+  for (let f = 1; f <= total; f++) {
+    (FIXTURE[zona]?.[String(f)] || []).forEach(m => { allTeams.add(m.local); allTeams.add(m.visitante); });
+  }
+  allTeams.forEach(t => { eq[t] = { pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, pts: 0 }; });
+  for (let f = 1; f <= total; f++) {
+    (FIXTURE[zona]?.[String(f)] || []).forEach(m => {
+      if (m.gl === null) return;
+      eq[m.local].pj++; eq[m.visitante].pj++;
+      eq[m.local].gf += m.gl; eq[m.local].gc += m.gv;
+      eq[m.visitante].gf += m.gv; eq[m.visitante].gc += m.gl;
+      if (m.gl > m.gv) { eq[m.local].g++; eq[m.local].pts += 3; eq[m.visitante].p++; }
+      else if (m.gl < m.gv) { eq[m.visitante].g++; eq[m.visitante].pts += 3; eq[m.local].p++; }
+      else { eq[m.local].e++; eq[m.visitante].e++; eq[m.local].pts++; eq[m.visitante].pts++; }
+    });
+  }
+  return Object.entries(eq).map(([n, s]) => ({ n, ...s }))
+    .sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)) || b.gf - a.gf);
+}
+
+function renderTablas() {
+  const zonas = getZonas();
+  const zonaMap = { "Zona A": "tablas-zona-a", "Zona B": "tablas-zona-b", "Zona C": "tablas-zona-c", "Zona D": "tablas-zona-d" };
+  const altMap = ["tablas-zona-a", "tablas-zona-b", "tablas-zona-c", "tablas-zona-d"];
+
+  // Hide all zona divs first
+  altMap.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+
+  zonas.forEach((zona, idx) => {
+    const divId = zonaMap[zona] || altMap[idx];
+    const el = document.getElementById(divId);
+    if (!el) return;
+    const rows = calcTabla(zona);
+    const clasif = getClasificados(zona);
+    const zc = zonaConfig(zona);
+    let zh = `<p style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${zc.color};margin:0 0 .28rem;">${zona}</p>`;
+    zh += `<div class="tabla-mini"><table style="width:100%;table-layout:fixed;"><thead><tr>
+      <th style="width:30px">#</th><th style="text-align:left;">Equipo</th>
+      <th title="Pts">Pts</th><th title="PJ">PJ</th><th title="G">G</th>
+      <th title="E">E</th><th title="P">P</th><th title="GF">GF</th>
+      <th title="GC">GC</th><th title="+/-">+/-</th>
+    </tr></thead><tbody>`;
+    rows.forEach((r, i) => {
+      const pos = i + 1, dif = r.gf - r.gc;
+      let posClass = 'noclasif';
+      if (pos <= clasif) posClass = 'clasif';
+      zh += `<tr>
+        <td><span class="pos ${posClass}">${pos}</span></td>
+        <td><div class="tr-eq">${escudoHTML(r.n, 'me')}<span style="font-size:13px;">${r.n}</span></div></td>
+        <td><strong class="pts">${r.pts}</strong></td>
+        <td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td>
+        <td>${r.gf}</td><td>${r.gc}</td>
+        <td style="color:${dif > 0 ? '#4caf50' : dif < 0 ? '#e57373' : 'var(--muted)'}">${dif > 0 ? '+' : ''}${dif}</td>
+      </tr>`;
+    });
+    zh += `</tbody></table></div>`;
+    el.innerHTML = zh;
+  });
+}
+
+// renderSegundaFase y renderGoleadoresResumen — solo para Federal A
+async function renderGoleadoresResumen() {
+  if (categoriaActual !== 'federal-a') return;
+  const gEl = document.getElementById('cont-goleadores-resumen');
+  if (!gEl) return;
+  try {
+    const { data } = await sb.from('eventos').select('tipo,planillas(jugadores(nombre,nombre_display),equipos(nombre))').in('tipo', ['gol', 'gol_penal', 'gol_tiro_libre']);
+    const map = {};
+    (data || []).forEach(ev => {
+      const j = ev.planillas?.jugadores, eq = ev.planillas?.equipos?.nombre || '';
+      if (!j) return;
+      const nombre = j.nombre_display || j.nombre || '?';
+      if (!map[nombre]) map[nombre] = { nombre, equipo: eq, goles: 0 };
+      map[nombre].goles++;
+    });
+    const top = Object.values(map).sort((a, b) => b.goles - a.goles).slice(0, 6);
+    if (!top.length) { gEl.innerHTML = ''; return; }
+    gEl.innerHTML = `<p style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aaa;margin:1.5rem 0 .28rem;">⚽ Goleadores</p>
+    <div class="tabla-mini"><table><thead><tr><th style="width:24px">#</th><th style="text-align:left">Jugador</th><th>⚽</th></tr></thead><tbody>
+    ${top.map((j, i) => `<tr><td><span class="pos">${i + 1}</span></td><td><div class="tr-eq">${escudoHTML(j.equipo, 'me')}<span style="font-size:13px">${j.nombre}</span></div></td><td><strong class="pts">${j.goles}</strong></td></tr>`).join('')}
+    </tbody></table></div>`;
+  } catch (e) {}
+}
+
+function renderSegundaFase() {
+  if (categoriaActual !== 'federal-a') { document.getElementById('cont-2dafase').innerHTML = ''; return; }
+  const el = document.getElementById('cont-2dafase');
+  if (!el) return;
+  const tabA = calcTabla('Zona A'), tabB = calcTabla('Zona B'), tabC = calcTabla('Zona C'), tabD = calcTabla('Zona D');
+  const nonA = [...tabA.slice(0, 5), ...tabB.slice(0, 4)];
+  const topQ = [tabB[4], tabC[4], tabD[4]].filter(Boolean).sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)) || b.gf - a.gf)[0];
+  const nonB = [...tabC.slice(0, 4), ...tabD.slice(0, 4)];
+  if (topQ) nonB.push({ ...topQ, _topQuinto: true });
+  const ss = `font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;`;
+  const renderLista = (equipos) => `<div style="width:100%;border:1px solid var(--border);border-radius:6px;overflow:hidden;">` +
+    equipos.map((r, i) => `<div style="display:flex;align-items:center;gap:.6rem;padding:.35rem .6rem;border-bottom:1px solid var(--border);background:${i % 2 === 0 ? 'var(--surface)' : 'var(--surface2)'};">
+      <span style="font-size:11px;font-weight:700;color:#aaa;width:16px;text-align:center;flex-shrink:0;">${i + 1}</span>
+      ${escudoHTML(r.n, 'me')}
+      <span style="font-size:13px;${r._topQuinto ? 'color:#f5e99a;' : 'color:#e8e8e8;'}white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.n}${r._topQuinto ? '&nbsp;<span style="font-size:9px;color:#f5e99a;">5°</span>' : ''}</span>
+    </div>`).join('') + `</div>`;
+  el.innerHTML = `<p class="sec-2dafase" style="margin:.5rem 0 .5rem;">📊 2DA FASE: PARCIAL</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+      <div><p style="${ss}color:#2ea043;margin:.5rem 0 .35rem;font-size:15px;">Nonagonal A</p>${renderLista(nonA)}</div>
+      <div><p style="${ss}color:#2ea043;margin:.5rem 0 .35rem;font-size:15px;">Nonagonal B</p>${renderLista(nonB)}</div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// FIXTURE PAGE
+// ══════════════════════════════════════════════════════
+function renderFxTabs() {
+  const zonas = getZonas();
+  document.getElementById('fx-tabs').innerHTML = zonas.map(z =>
+    `<div class="ztab ${z === fxZona ? 'active' : ''}" onclick="selFx('${z}')">${z}</div>`
+  ).join('');
+}
+function selFx(z) { fxZona = z; renderFxTabs(); renderFxCont(); }
+function renderFxCont() {
+  let html = '';
+  const total = getTotalFechas();
+  for (let f = 1; f <= total; f++) {
+    const ms = FIXTURE[fxZona]?.[String(f)] || [];
+    html += `<div style="font-size:11px;color:#3a3a3a;text-transform:uppercase;letter-spacing:1px;margin:.7rem 0 .3rem;font-family:'Barlow Condensed',sans-serif;font-weight:600;">Fecha ${f}</div>`;
+    ms.forEach(m => {
+      const meta = PARTIDO_META[getMetaKey(fxZona, f, m.local, m.visitante)] || {};
+      const r = m.gl !== null
+        ? `<div class="score">${m.gl}<span class="sep">—</span>${m.gv}</div>`
+        : meta.hora
+          ? `<div style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:var(--accent);text-align:center;">${meta.hora}</div>`
+          : `<div class="vs">VS</div>`;
+      html += `<div class="partido"><div class="eq">${escudoHTML(m.local)}<div class="eqn">${m.local}</div></div><div class="res">${r}</div><div class="eq vis">${escudoHTML(m.visitante)}<div class="eqn">${m.visitante}</div></div></div>`;
+    });
+  }
+  document.getElementById('fx-cont').innerHTML = html || '<div style="padding:2rem;color:#444;text-align:center;">Sin fixture cargado.</div>';
+}
+
+// ══════════════════════════════════════════════════════
+// ESTADÍSTICAS (básico — para Federal A usa Supabase)
+// ══════════════════════════════════════════════════════
+function showStatsTab(tab, el) {
+  document.querySelectorAll('#stats-tabs .ztab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['jugadores', 'equipos', 'arbitros'].forEach(t => {
+    document.getElementById('stats-' + t).style.display = t === tab ? '' : 'none';
+  });
+}
+
+async function cargarEstadisticas() {
+  if (categoriaActual !== 'federal-a') {
+    document.getElementById('stats-loading').style.display = 'none';
+    document.getElementById('stats-content').style.display = '';
+    ['tbl-goleadores','tbl-asistentes','tbl-amarillas','tbl-rojas','tbl-vallas','tbl-tiro-libre','tbl-general','tbl-local-stats','tbl-visitante-stats','tbl-arbitros'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<div style="padding:1rem;color:var(--muted);font-size:13px;">Estadísticas próximamente para esta categoría.</div>';
+    });
+    return;
+  }
+  // Para Federal A: estadísticas completas desde Supabase
+  // (lógica simplificada — podés expandirla como en el original)
+  document.getElementById('stats-loading').style.display = 'none';
+  document.getElementById('stats-content').style.display = '';
+  // Tabla general desde fixture local
+  const zonas = getZonas();
+  const equipoStats = {};
+  zonas.forEach(z => {
+    const total = getTotalFechas();
+    for (let f = 1; f <= total; f++) {
+      (FIXTURE[z]?.[String(f)] || []).forEach(m => {
+        if (m.gl === null) return;
+        [m.local, m.visitante].forEach(eq => { if (!equipoStats[eq]) equipoStats[eq] = { pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, pts: 0, local: { pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, pts: 0 }, visit: { pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, pts: 0 } }; });
+        const loc = equipoStats[m.local], vis = equipoStats[m.visitante];
+        loc.pj++; vis.pj++; loc.gf += m.gl; loc.gc += m.gv; vis.gf += m.gv; vis.gc += m.gl;
+        loc.local.pj++; vis.visit.pj++;
+        if (m.gl > m.gv) { loc.g++; loc.pts += 3; vis.p++; loc.local.g++; loc.local.pts += 3; vis.visit.p++; }
+        else if (m.gl < m.gv) { vis.g++; vis.pts += 3; loc.p++; vis.visit.g++; vis.visit.pts += 3; loc.local.p++; }
+        else { loc.e++; vis.e++; loc.pts++; vis.pts++; loc.local.e++; loc.local.pts++; vis.visit.e++; vis.visit.pts++; }
+      });
+    }
+  });
+  const tblHead = (...cols) => `<table class="tabla-stats"><thead><tr>${cols.map(([w, t, l]) => `<th style="${w ? `width:${w};` : ''}" ${t ? `title="${t}"` : ''}>${l}</th>`).join('')}</tr></thead><tbody>`;
+  const fmtRow = (rows, fn) => rows.map(fn).join('') + '</tbody></table>';
+  const generalRows = Object.entries(equipoStats).map(([n, s]) => ({ n, ...s, dif: s.gf - s.gc })).sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc) || b.gf - a.gf);
+  document.getElementById('tbl-general').innerHTML = tblHead(['24px', '', '#'], ['', 'Equipo', 'Equipo'], ['30px', 'PJ', 'PJ'], ['26px', 'G', 'G'], ['26px', 'E', 'E'], ['26px', 'P', 'P'], ['26px', 'GF', 'GF'], ['26px', 'GC', 'GC'], ['32px', '+/-', '+/-'], ['32px', 'Pts', 'Pts']) +
+    fmtRow(generalRows, (r, i) => {
+      const d = r.gf - r.gc;
+      return `<tr><td><span class="pos">${i + 1}</span></td><td><div class="tr-eq">${escudoHTML(r.n, 'me')}<span style="font-size:13px;">${r.n}</span></div></td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.p}</td><td>${r.gf}</td><td>${r.gc}</td><td style="color:${d > 0 ? '#4caf50' : d < 0 ? '#e57373' : 'var(--muted)'}">${d > 0 ? '+' : ''}${d}</td><td><strong class="pts">${r.pts}</strong></td></tr>`;
+    });
+  ['tbl-goleadores','tbl-asistentes','tbl-amarillas','tbl-rojas','tbl-vallas','tbl-tiro-libre','tbl-local-stats','tbl-visitante-stats','tbl-arbitros'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.innerHTML) el.innerHTML = '<div style="padding:1rem;color:var(--muted);font-size:13px;">Cargando desde Supabase...</div>';
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// PLANTELES
+// ══════════════════════════════════════════════════════
+function cargarPlanteles() {
+  document.getElementById('plt-landing').style.display = '';
+  document.getElementById('plt-club-detail').style.display = 'none';
+  if (_pltCargado) return;
+  _pltCargado = true;
+  renderClubGrid();
+}
+
+function renderClubGrid() {
+  const cont = document.getElementById('plt-grid-cont');
+  if (!cont) return;
+  const zonas = getZonas();
+  let html = '';
+  zonas.forEach((zona, zi) => {
+    const seen = new Set(), teams = [];
+    const total = getTotalFechas();
+    for (let f = 1; f <= total; f++) {
+      (FIXTURE[zona]?.[String(f)] || []).forEach(m => {
+        if (!seen.has(m.local)) { seen.add(m.local); teams.push(m.local); }
+        if (!seen.has(m.visitante)) { seen.add(m.visitante); teams.push(m.visitante); }
+      });
+    }
+    teams.sort((a, b) => a.localeCompare(b, 'es'));
+    if (zi > 0) html += '<div class="plt-zone-sep"></div>';
+    const zc = zonaConfig(zona);
+    html += `<p style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${zc.color};margin:1rem 0 .5rem;">${zona}</p>`;
+    html += '<div class="plt-grid">';
+    teams.forEach(nombre => {
+      const esc = ESCUDOS[nombre];
+      const safe = nombre.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      html += `<div class="plt-card" onclick="abrirClub('${safe}')">
+        ${esc ? `<img src="${esc}" onerror="this.style.display='none'" alt="">` : '<div class="plt-noesc">⚽</div>'}
+        <span class="plt-cn">${nombre}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  cont.innerHTML = html || '<div style="padding:2rem;color:#444;text-align:center;">Sin equipos cargados.</div>';
+}
+
+function _zonaDeClub(nombre) {
+  for (const zona of getZonas()) {
+    const total = getTotalFechas();
+    for (let f = 1; f <= total; f++) {
+      if ((FIXTURE[zona]?.[String(f)] || []).some(m => m.local === nombre || m.visitante === nombre)) return zona;
+    }
+  }
+  return null;
+}
+
+async function abrirClub(nombre) {
+  document.getElementById('plt-landing').style.display = 'none';
+  const det = document.getElementById('plt-club-detail');
+  det.style.display = '';
+  const zona = _zonaDeClub(nombre);
+  const zc = zona ? zonaConfig(zona) : { color: '#888', text: '#fff' };
+  const esc = ESCUDOS[nombre];
+  document.getElementById('plt-detail-header-cont').innerHTML = `
+    <div class="plt-detail-header">
+      ${esc ? `<img class="plt-detail-escudo" src="${esc}" alt="">` : '<div class="plt-detail-escudo plt-noesc">⚽</div>'}
+      <div>
+        <div class="plt-detail-name">${nombre}</div>
+        ${zona ? `<span class="plt-zona-pill" style="background:${zc.color};color:${zc.text};">${zona}</span>` : ''}
+      </div>
+    </div>`;
+  renderPartidosClub(nombre);
+  document.getElementById('plt-squad-cont').innerHTML = '<div style="color:#888;font-size:13px;padding:.5rem 0;">Cargando plantel...</div>';
+  const eq = EQUIPOS_LIST.find(e => e.nombre === nombre);
+  if (eq) await cargarPlantelClub(eq.id);
+  else document.getElementById('plt-squad-cont').innerHTML = '<div style="color:#888;font-size:13px;padding:.5rem 0;">Sin plantel registrado.</div>';
+  window.scrollTo(0, 0);
+}
+
+function voltarPlanteles() {
+  document.getElementById('plt-club-detail').style.display = 'none';
+  document.getElementById('plt-landing').style.display = '';
+  window.scrollTo(0, 0);
+}
+
+function renderPartidosClub(nombre) {
+  const cont = document.getElementById('plt-matches-cont');
+  const jugados = [];
+  const zonas = getZonas();
+  const total = getTotalFechas();
+  zonas.forEach(zona => {
+    for (let f = 1; f <= total; f++) {
+      (FIXTURE[zona]?.[String(f)] || []).forEach(m => {
+        if ((m.local === nombre || m.visitante === nombre) && m.gl !== null) {
+          const esLocal = m.local === nombre;
+          jugados.push({ fecha: f, esLocal, rival: esLocal ? m.visitante : m.local, gf: esLocal ? m.gl : m.gv, gc: esLocal ? m.gv : m.gl, fichaKey: `${zona}_${f}_${m.local}_${m.visitante}` });
+        }
+      });
+    }
+  });
+  jugados.sort((a, b) => a.fecha - b.fecha);
+  if (!jugados.length) { cont.innerHTML = '<div class="plt-sec-title">Partidos</div><div style="color:#888;font-size:13px;">Sin partidos jugados aún.</div>'; return; }
+  let html = `<div class="plt-sec-title">Partidos jugados (${jugados.length})</div><div class="plt-matches-list">`;
+  jugados.forEach(p => {
+    const res = p.gf > p.gc ? 'G' : p.gf === p.gc ? 'E' : 'P';
+    const rivalEsc = ESCUDOS[p.rival];
+    const tienePlanilla = !!PLANILLA_CARGADA[p.fichaKey];
+    const safeKey = p.fichaKey.replace(/'/g, "\\'");
+    const fichaBtn = tienePlanilla
+      ? `<div class="plt-act-btn" onclick="verFicha('${safeKey}',true)" title="Ver planilla">📄</div>`
+      : `<div class="plt-act-btn plt-dis">📄</div>`;
+    html += `<div class="plt-match-row">
+      <span class="plt-fecha-lbl">F.${p.fecha}</span>
+      <div class="plt-rival-cell">${rivalEsc ? `<img src="${rivalEsc}" alt="">` : ''}<span class="plt-rival-name">${p.rival}</span></div>
+      <span class="plt-lv-badge">${p.esLocal ? 'L' : 'V'}</span>
+      <span class="plt-res-badge ${res}">${p.gf}−${p.gc}</span>
+      <div class="plt-action-btns">${fichaBtn}</div>
+    </div>`;
+  });
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+async function cargarPlantelClub(equipoId) {
+  const cont = document.getElementById('plt-squad-cont');
+  try {
+    const [{ data: jugadores }, { data: planillas }] = await Promise.all([
+      sb.from('jugadores').select('id,nombre,nombre_display,posicion,fecha_nacimiento,lugar_nacimiento,altura_m,peso_kg,pierna_habil').eq('equipo_id', equipoId).order('nombre'),
+      sb.from('planillas').select('jugador_id,titular,eventos(tipo,minuto)').eq('equipo_id', equipoId)
+    ]);
+    if (!jugadores?.length) { cont.innerHTML = '<div style="color:#888;font-size:13px;">Sin jugadores registrados.</div>'; return; }
+    const stats = {};
+    jugadores.forEach(j => { stats[j.id] = { pj: 0, gol: 0, ast: 0 }; });
+    (planillas || []).forEach(pl => {
+      const s = stats[pl.jugador_id]; if (!s) return;
+      const evs = pl.eventos || [];
+      const entraEv = evs.find(e => e.tipo === 'cambio_entra');
+      if (pl.titular || entraEv) s.pj++;
+      evs.forEach(e => {
+        if (['gol', 'gol_penal', 'gol_tiro_libre'].includes(e.tipo)) s.gol++;
+        if (e.tipo === 'asistencia') s.ast++;
+      });
+    });
+    cont.innerHTML = `<div class="plt-sec-title" style="margin-top:1.5rem;">Plantel (${jugadores.length})</div>
+      <div class="plt-table-wrap"><table class="plt-table">
+        <thead><tr><th style="text-align:left;min-width:130px;">Jugador</th><th>Pos.</th><th>PJ</th><th>⚽</th><th>👟</th></tr></thead>
+        <tbody>${jugadores.map(j => {
+          const s = stats[j.id] || {};
+          const nombre = j.nombre_display || j.nombre || '—';
+          return `<tr><td>${nombre}</td><td style="text-align:center;">${j.posicion || '—'}</td><td>${s.pj || 0}</td><td class="${s.gol > 0 ? 'plt-gol-hi' : 'plt-stat-0'}">${s.gol || 0}</td><td class="${s.ast > 0 ? 'plt-ast-hi' : 'plt-stat-0'}">${s.ast || 0}</td></tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+  } catch (e) { cont.innerHTML = '<div style="color:#888;font-size:13px;">Error al cargar.</div>'; }
+}
+
+// ══════════════════════════════════════════════════════
+// FICHA MODAL (simplificada — usa la lógica original para Federal A)
+// ══════════════════════════════════════════════════════
+async function verFicha(key, tienePlanilla) {
+  if (!tienePlanilla) { alert('Planilla pendiente de carga.'); return; }
+  const fichaModal = document.getElementById('ficha-modal');
+  const fichaCont = document.getElementById('ficha-cont');
+  fichaCont.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);">Cargando ficha...</div>';
+  fichaModal.style.display = 'flex';
+  try {
+    const [pZona, pFecha] = key.split('_');
+    const { data: partidos } = await sb.from('partidos').select('id,zona,fecha,equipo_local_nombre,equipo_visitante_nombre,goles_local,goles_visitante,estadio,arbitro,dia,hora,dt_local,dt_visitante').eq('zona', pZona).eq('fecha', parseInt(pFecha));
+    const partido = partidos?.find(p => `${p.zona}_${p.fecha}_${p.equipo_local_nombre}_${p.equipo_visitante_nombre}` === key);
+    if (!partido) { fichaCont.innerHTML = '<div style="color:#e57373;padding:2rem;">No se encontró el partido.</div>'; return; }
+    const escL = ESCUDOS[partido.equipo_local_nombre] ? `<img src="${ESCUDOS[partido.equipo_local_nombre]}" style="width:36px;height:36px;object-fit:contain;">` : '';
+    const escV = ESCUDOS[partido.equipo_visitante_nombre] ? `<img src="${ESCUDOS[partido.equipo_visitante_nombre]}" style="width:36px;height:36px;object-fit:contain;">` : '';
+    fichaCont.innerHTML = `
+      <div style="text-align:center;padding:1rem 0;">
+        <div style="font-size:14px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:700;margin-bottom:.75rem;">${partido.zona} — Fecha ${partido.fecha}</div>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:0;">
+          <div style="text-align:right;padding-right:12px;"><div style="display:inline-flex;align-items:center;gap:6px;">${escL}<span style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;">${partido.equipo_local_nombre}</span></div></div>
+          <div style="text-align:center;padding:0 8px;"><span style="font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;color:var(--accent);">${partido.goles_local ?? 0} — ${partido.goles_visitante ?? 0}</span></div>
+          <div style="text-align:left;padding-left:12px;"><div style="display:inline-flex;align-items:center;gap:6px;"><span style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;">${partido.equipo_visitante_nombre}</span>${escV}</div></div>
+        </div>
+        ${partido.estadio ? `<div style="font-size:13px;color:#ccc;margin-top:1rem;">🏟️ <strong>${partido.estadio}</strong></div>` : ''}
+        ${partido.arbitro ? `<div style="font-size:13px;color:#ccc;margin-top:.35rem;">🧑‍⚖️ <strong>${partido.arbitro}</strong></div>` : ''}
+      </div>
+      <div style="text-align:center;padding:1rem 0;color:var(--muted);font-size:13px;">Planilla completa disponible en el sitio original.</div>`;
+  } catch (e) { fichaCont.innerHTML = `<div style="color:#e57373;padding:2rem;">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════════════════════════════
+// FORO
+// ══════════════════════════════════════════════════════
+let ULTIMO_MENSAJE_TS = null;
+async function cargarMensajesForo(pagina = 0) {
+  FORO_PAGINA = pagina;
+  try {
+    const from = pagina * FORO_POR_PAGINA;
+    const { data, count } = await sb.from('mensajes').select('id,contenido,created_at,usuario_id,perfiles(username,rango,equipos(nombre))', { count: 'exact' }).eq('eliminado', false).order('created_at', { ascending: false }).range(from, from + FORO_POR_PAGINA - 1);
+    if (!data) { renderForoMsgs([], 0, 0); return; }
+    const msgs = data.map(m => ({ id: m.id, user: m.perfiles?.username || 'Anónimo', rango: m.perfiles?.rango || 'Simpatizante', equipo: m.perfiles?.equipos?.nombre || '', tiempo: tiempoRelativo(m.created_at), texto: m.contenido, usuario_id: m.usuario_id, votos: { pos: 0, neg: 0 }, miVoto: 0 }));
+    renderForoMsgs(msgs, pagina, count || 0);
+  } catch (e) { renderForoMsgs([], 0, 0); }
+}
+
+function tiempoRelativo(ts) {
+  const diff = (Date.now() - new Date(ts)) / 1000;
+  if (diff < 60) return 'ahora'; if (diff < 3600) return `hace ${Math.floor(diff / 60)}min`;
+  if (diff < 86400) return `hace ${Math.floor(diff / 3600)}h`; return `hace ${Math.floor(diff / 86400)}d`;
+}
+
+async function publicarMensaje() {
+  if (!usuarioActual) { toggleModal(); return; }
+  const txt = document.getElementById('foro-input')?.value.trim();
+  if (!txt || txt.length > 100) return;
+  const { error } = await sb.from('mensajes').insert({ foro_id: 1, usuario_id: usuarioActual.id, contenido: txt });
+  if (!error) { ULTIMO_MENSAJE_TS = Date.now(); document.getElementById('foro-input').value = ''; const chars = document.getElementById('foro-chars'); if (chars) chars.textContent = '0/100'; cargarMensajesForo(); }
+}
+
+function renderForoMsgs(msgs, pagina = 0, total = 0) {
+  const logueado = !!usuarioActual;
+  document.getElementById('foro-input-area').innerHTML = logueado
+    ? `<textarea id="foro-input" placeholder="Escribí tu mensaje..." maxlength="100" oninput="document.getElementById('foro-chars').textContent=this.value.length+'/100'" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.7rem .9rem;color:var(--text);font-size:14px;font-family:'Barlow',sans-serif;resize:vertical;min-height:80px;outline:none;"></textarea>
+       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.6rem;"><span id="foro-chars" style="font-size:11px;color:#aaa;">0/100</span><button onclick="publicarMensaje()" style="background:var(--accent);color:#111;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:6px;padding:.5rem 1.25rem;cursor:pointer;">Publicar</button></div>`
+    : `<div style="font-size:13px;color:var(--muted);margin-bottom:.75rem;">Iniciá sesión para participar</div><button onclick="toggleModal()" style="background:var(--accent);color:#111;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:6px;padding:.5rem 1.25rem;cursor:pointer;">Ingresar para publicar</button>`;
+  if (!msgs.length) { document.getElementById('foro-msgs').innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;">Sin mensajes aún.</div>'; return; }
+  document.getElementById('foro-msgs').innerHTML = msgs.map(m => `
+    <div style="display:flex;border-bottom:2px solid #1a1a1a;min-height:80px;">
+      <div style="width:140px;min-width:140px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;padding:.65rem .4rem;background:#0e0e0e;border-right:2px solid #1a1a1a;">
+        ${escudoHTML(m.equipo, 'esc')}
+        <span style="font-size:13px;font-weight:700;color:#f0f0f0;text-align:center;word-break:break-word;width:100%;padding:0 4px;">${m.user}</span>
+        <span style="font-size:10px;color:#aaa;background:var(--surface2);padding:1px 7px;border-radius:8px;">${m.rango}</span>
+        <span style="font-size:9px;color:#666;">${m.tiempo}</span>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;padding:.75rem 1.25rem;font-size:15px;color:#e8e8e8;line-height:1.6;word-break:break-word;">${m.texto.replace(/</g, '&lt;')}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════
+sb.auth.onAuthStateChange((event, session) => {
+  usuarioActual = session?.user || null;
+  PERFIL_USUARIO = null;
+  actualizarIconoUsuario();
+  if (document.getElementById('page-foro').classList.contains('active')) cargarMensajesForo();
+});
+
+function mostrarPanel(panel) {
+  ['login', 'registro', 'perfil'].forEach(p => {
+    const el = document.getElementById('panel-' + p); if (el) el.style.display = p === panel ? '' : 'none';
+  });
+}
+function abrirModal() { if (usuarioActual) mostrarPanel('perfil'); else mostrarPanel('login'); toggleModal(); }
+function toggleModal() { document.getElementById('modal-overlay').classList.toggle('open'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('modal-overlay')) toggleModal(); }
+
+async function actualizarIconoUsuario() {
+  const btn = document.getElementById('user-btn');
+  if (!btn) return;
+  if (usuarioActual) {
+    btn.style.borderColor = 'var(--accent)';
+    const pi = document.getElementById('perfil-info');
+    if (pi) pi.innerHTML = `<div style="font-size:17px;font-weight:700;">${usuarioActual.email}</div><div style="font-size:11px;color:var(--accent);margin-top:.3rem;">Sesión activa</div>`;
+  } else { btn.style.borderColor = ''; }
+}
+
+async function loginConEmail() {
+  const email = document.getElementById('inp-email').value, pass = document.getElementById('inp-pass').value;
+  if (!email || !pass) { alert('Completá email y contraseña'); return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) alert(error.message); else toggleModal();
+}
+
+async function registrarUsuario() {
+  const nombre = document.getElementById('reg-nombre').value.trim(), apellido = document.getElementById('reg-apellido').value.trim();
+  const email = document.getElementById('reg-email').value.trim(), pass = document.getElementById('reg-pass').value;
+  const username = document.getElementById('reg-username').value.trim();
+  if (!nombre || !apellido || !email || !pass || !username) { alert('Completá todos los campos.'); return; }
+  if (pass.length < 8) { alert('La contraseña debe tener al menos 8 caracteres.'); return; }
+  const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { nombre, apellido, username } } });
+  if (error) alert(error.message); else { alert('¡Registrado! Revisá tu mail.'); mostrarPanel('login'); }
+}
+
+async function cerrarSesion() { await sb.auth.signOut(); toggleModal(); }
+
+// ══════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════════════════
+function goPage(id, el) {
+  // Si no hay categoría seleccionada y van a inicio, mostrar landing
+  if (id === 'inicio') {
+    const hasCat = FIXTURE && Object.keys(FIXTURE).length > 0;
+    document.getElementById('inicio-cat-content').style.display = hasCat ? '' : 'none';
+    document.getElementById('inicio-landing').style.display = hasCat ? 'none' : '';
+  }
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    if (p.id !== 'page-foro') p.style.display = ''; else p.style.display = 'none';
+  });
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  page.classList.add('active');
+  if (el) el.classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'fixture') { fxZona = getZonas()[0]; document.getElementById('fixture-title').textContent = `Fixture completo — ${getCat()?.nombre || ''} ${getCat()?.temporada || ''}`; renderFxTabs(); renderFxCont(); }
+  if (id === 'estadisticas') cargarEstadisticas();
+  if (id === 'planteles') cargarPlanteles();
+  if (id === 'foro') { page.style.display = 'flex'; page.style.height = 'calc(100vh - 100px)'; cargarMensajesForo(); }
+}
+
+// ══════════════════════════════════════════════════════
+// POLLING EN VIVO
+// ══════════════════════════════════════════════════════
+function iniciarPollingEnVivo() {
+  if (_liveInterval) clearInterval(_liveInterval);
+  _liveInterval = setInterval(async () => {
+    if (categoriaActual === 'federal-a') {
+      await cargarPartidosDesdeDB_FederalA();
+      renderPartidos(fechaActual);
+      renderTablas();
+    }
+  }, 60000);
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+async function init() {
+  // Mostrar landing de categorías al arrancar
+  document.getElementById('inicio-cat-content').style.display = 'none';
+  document.getElementById('inicio-landing').style.display = '';
+
+  // Cargar Federal A por defecto (cat-bar ya la tiene activa)
+  await selCategoria('federal-a', document.querySelector('.cat-item.active'));
+}
+
+init();
+</script>
 </body>
 </html>
