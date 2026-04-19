@@ -31,31 +31,29 @@ padding-bottom:75px;
 }
 
 header{
-background:linear-gradient(90deg,#0b0b0b,#151515);
-padding:16px 18px;
+background:#111;
+padding:16px;
 border-bottom:2px solid var(--accent);
 display:flex;
 justify-content:space-between;
 align-items:center;
 position:sticky;
 top:0;
-z-index:50;
+z-index:999;
 }
 
 .logo{
 font-size:28px;
 font-weight:900;
 color:var(--accent);
-letter-spacing:.5px;
 }
 
 .badge{
-background:#1d1d1d;
-padding:7px 12px;
-border-radius:999px;
 font-size:12px;
 color:#ddd;
-border:1px solid #2e2e2e;
+background:#1c1c1c;
+padding:7px 12px;
+border-radius:999px;
 }
 
 .wrap{
@@ -89,13 +87,13 @@ font-weight:700;
 .menu a{
 display:block;
 padding:12px;
-margin-bottom:9px;
+margin-bottom:10px;
 border-radius:12px;
 background:var(--card);
 text-decoration:none;
 color:#eee;
+cursor:pointer;
 transition:.2s;
-border:1px solid transparent;
 }
 
 .menu a:hover{
@@ -106,6 +104,14 @@ font-weight:700;
 
 main{
 padding:20px;
+}
+
+.page{
+display:none;
+}
+
+.page.active{
+display:block;
 }
 
 .hero{
@@ -122,40 +128,14 @@ margin-bottom:8px;
 }
 
 .hero p{
-color:#c9c9c9;
+color:#ccc;
 font-size:14px;
-line-height:1.5;
-}
-
-.grid-top{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:14px;
-margin-bottom:18px;
-}
-
-.stat{
-background:var(--card);
-padding:16px;
-border-radius:14px;
-border:1px solid var(--line);
-}
-
-.stat h3{
-font-size:14px;
-color:var(--muted);
-margin-bottom:8px;
-}
-
-.stat strong{
-font-size:28px;
-color:var(--accent);
 }
 
 .block-title{
 font-size:18px;
-margin:18px 0 12px;
 font-weight:800;
+margin:18px 0 12px;
 }
 
 .match{
@@ -164,12 +144,6 @@ padding:16px;
 border-radius:14px;
 border:1px solid var(--line);
 margin-bottom:12px;
-transition:.2s;
-}
-
-.match:hover{
-transform:translateY(-2px);
-border-color:#3c3c3c;
 }
 
 .live{
@@ -182,7 +156,6 @@ margin-bottom:7px;
 .teams{
 display:flex;
 justify-content:space-between;
-align-items:center;
 font-size:22px;
 font-weight:800;
 margin-bottom:6px;
@@ -219,19 +192,6 @@ font-size:14px;
 border:none;
 }
 
-.sponsor{
-background:linear-gradient(135deg,#35c6ff,#1692c4);
-color:#000;
-font-weight:900;
-text-align:center;
-padding:18px;
-border-radius:16px;
-}
-
-.bottom-nav{
-display:none;
-}
-
 @media(max-width:1050px){
 .wrap{
 grid-template-columns:1fr;
@@ -242,30 +202,6 @@ display:none;
 main{
 padding:14px;
 }
-.bottom-nav{
-display:flex;
-position:fixed;
-bottom:0;
-left:0;
-right:0;
-background:#111;
-border-top:1px solid #262626;
-justify-content:space-around;
-padding:10px 0;
-z-index:999;
-}
-.bottom-nav a{
-color:#fff;
-text-decoration:none;
-font-size:12px;
-text-align:center;
-}
-.hero h1{
-font-size:24px;
-}
-.grid-top{
-grid-template-columns:1fr;
-}
 }
 </style>
 </head>
@@ -274,7 +210,7 @@ grid-template-columns:1fr;
 
 <header>
 <div class="logo">FM Ascenso 📈</div>
-<div class="badge">EN VIVO • 4 partidos</div>
+<div class="badge">EN VIVO</div>
 </header>
 
 <div class="wrap">
@@ -283,34 +219,21 @@ grid-template-columns:1fr;
 <div class="section-title">Categorías</div>
 
 <div class="menu">
-<a href="#">Primera Nacional</a>
-<a href="#">Primera B Metro</a>
-<a href="#">Primera C</a>
-<a href="#">Federal A</a>
-<a href="#">Regional Amateur</a>
-<a href="#">Mercado de Pases</a>
-<a href="#">Goleadores</a>
-<a href="#">Foro</a>
+<a onclick="showPage('inicio')">Inicio</a>
+<a onclick="showPage('nacional')">Primera Nacional</a>
+<a onclick="showPage('federal')">Federal A</a>
+<a onclick="showPage('metro')">Primera B</a>
+<a onclick="showPage('c')">Primera C</a>
 </div>
 </aside>
 
 <main>
 
+<!-- INICIO -->
+<section id="inicio" class="page active">
 <div class="hero">
-<h1>Todo el Ascenso Argentino en un solo lugar</h1>
-<p>Resultados en vivo, tablas, goleadores, mercado de pases y cobertura diaria de todas las categorías.</p>
-</div>
-
-<div class="grid-top">
-<div class="stat">
-<h3>Seguidores IG</h3>
-<strong>20K+</strong>
-</div>
-
-<div class="stat">
-<h3>Visualizaciones Mensuales</h3>
-<strong>5M+</strong>
-</div>
+<h1>Todo el Ascenso Argentino</h1>
+<p>Resultados, tablas, fixtures y estadísticas.</p>
 </div>
 
 <div class="block-title">🔴 Resultados en Vivo</div>
@@ -326,22 +249,52 @@ grid-template-columns:1fr;
 </div>
 
 <div class="match">
-<div class="live">● EN VIVO 45'</div>
-<div class="teams">
-<span>Chicago</span>
-<span>0 - 0</span>
-<span>Quilmes</span>
-</div>
-<div class="league">Primera Nacional</div>
-</div>
-
-<div class="match">
 <div class="teams">
 <span>Atlanta</span>
 <span>3 - 0</span>
 <span>Güemes</span>
 </div>
 <div class="league">Finalizado</div>
+</div>
+</section>
+
+<!-- FEDERAL -->
+<section id="federal" class="page">
+<div class="hero">
+<h1>Federal A</h1>
+<p>Fixture, resultados y posiciones.</p>
+</div>
+
+<div class="match">
+<div class="teams">
+<span>Olimpo</span>
+<span>1 - 0</span>
+<span>Santamarina</span>
+</div>
+<div class="league">Zona A</div>
+</div>
+
+<div class="match">
+<div class="teams">
+<span>Douglas Haig</span>
+<span>2 - 2</span>
+<span>Independiente CH</span>
+</div>
+<div class="league">Zona B</div>
+</div>
+
+<div class="card">
+<h3>Tabla Zona A</h3>
+<div class="table-row"><span>1. Olimpo</span><strong>18</strong></div>
+<div class="table-row"><span>2. Villa Mitre</span><strong>16</strong></div>
+<div class="table-row"><span>3. Kimberley</span><strong>14</strong></div>
+</div>
+</section>
+
+<!-- NACIONAL -->
+<section id="nacional" class="page">
+<div class="hero">
+<h1>Primera Nacional</h1>
 </div>
 
 <div class="match">
@@ -350,48 +303,53 @@ grid-template-columns:1fr;
 <span>21:10</span>
 <span>Chacarita</span>
 </div>
-<div class="league">Hoy</div>
 </div>
+</section>
+
+<!-- B -->
+<section id="metro" class="page">
+<div class="hero">
+<h1>Primera B Metro</h1>
+<p>Próximamente.</p>
+</div>
+</section>
+
+<!-- C -->
+<section id="c" class="page">
+<div class="hero">
+<h1>Primera C</h1>
+<p>Próximamente.</p>
+</div>
+</section>
 
 </main>
 
 <aside class="right">
 
 <div class="card">
-<h3>🏆 Tabla Nacional</h3>
-
-<div class="table-row"><span>1. Colón</span><strong>28</strong></div>
-<div class="table-row"><span>2. Atlanta</span><strong>26</strong></div>
-<div class="table-row"><span>3. Chacarita</span><strong>24</strong></div>
-<div class="table-row"><span>4. Morón</span><strong>23</strong></div>
-<div class="table-row"><span>5. Quilmes</span><strong>21</strong></div>
-
-</div>
-
-<div class="card">
 <h3>⚽ Goleadores</h3>
-
 <div class="table-row"><span>Jugador A</span><strong>8</strong></div>
 <div class="table-row"><span>Jugador B</span><strong>7</strong></div>
 <div class="table-row"><span>Jugador C</span><strong>6</strong></div>
-
 </div>
 
-<div class="sponsor">
-TU MARCA ACÁ
+<div class="card">
+<h3>🏆 Sponsor</h3>
+Tu marca acá
 </div>
 
 </aside>
 
 </div>
 
-<nav class="bottom-nav">
-<a href="#">🏠<br>Inicio</a>
-<a href="#">📅<br>Fixture</a>
-<a href="#">📊<br>Tablas</a>
-<a href="#">⚽<br>Stats</a>
-<a href="#">👤<br>Perfil</a>
-</nav>
+<script>
+function showPage(id){
+document.querySelectorAll('.page').forEach(p=>{
+p.classList.remove('active');
+});
+document.getElementById(id).classList.add('active');
+}
+</script>
 
 </body>
 </html>
