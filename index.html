@@ -3,84 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>FM en Ascenso</title>
+<title>FM en Ascenso V2</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{background:#0d0d0d;color:#fff}
-header{background:#111;padding:20px;text-align:center;border-bottom:2px solid #4fc3f7}
-header h1{font-size:34px;color:#4fc3f7}
-header p{color:#ccc;margin-top:5px}
-nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:15px;background:#151515}
-nav a{color:#fff;text-decoration:none;padding:8px 14px;background:#222;border-radius:8px}
-.hero{padding:30px;text-align:center;background:linear-gradient(135deg,#111,#1e1e1e)}
-.hero h2{font-size:28px;color:#4fc3f7}
-.hero p{margin-top:10px;color:#ccc}
-.section{padding:25px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:15px}
-.card{background:#1b1b1b;padding:18px;border-radius:14px;border:1px solid #333}
+body{background:#111;color:#fff}
+header{background:#0d0d0d;padding:15px 20px;border-bottom:2px solid #4fc3f7;font-size:28px;font-weight:bold;color:#4fc3f7}
+.container{display:grid;grid-template-columns:240px 1fr 280px;min-height:100vh}
+.sidebar{background:#151515;padding:20px;border-right:1px solid #222}
+.sidebar h3{margin-bottom:15px;color:#4fc3f7}
+.sidebar a{display:block;color:#ddd;text-decoration:none;padding:10px;border-radius:8px;margin-bottom:8px;background:#1d1d1d}
+.sidebar a:hover{background:#4fc3f7;color:#000}
+.main{padding:20px}
+.match{background:#1a1a1a;padding:15px;border-radius:12px;margin-bottom:12px;border:1px solid #2b2b2b}
+.live{color:#00ff66;font-weight:bold;font-size:13px}
+.right{background:#151515;padding:20px;border-left:1px solid #222}
+.card{background:#1d1d1d;padding:15px;border-radius:12px;margin-bottom:15px}
 .card h3{color:#4fc3f7;margin-bottom:10px}
-footer{padding:25px;text-align:center;background:#111;margin-top:30px;color:#aaa}
-.badge{display:inline-block;background:#4fc3f7;color:#000;padding:6px 12px;border-radius:20px;font-weight:bold;margin-top:10px}
+small{color:#aaa}
+@media(max-width:900px){
+.container{grid-template-columns:1fr}
+.sidebar,.right{display:none}
+}
 </style>
 </head>
 <body>
 
-<header>
-<h1>FM en Ascenso 📈</h1>
-<p>Todo el Ascenso Argentino en un solo lugar</p>
-</header>
+<header>FM en Ascenso 📈</header>
 
-<nav>
+<div class="container">
+
+<aside class="sidebar">
+<h3>Categorías</h3>
 <a href="#">Primera Nacional</a>
-<a href="#">B Metro</a>
+<a href="#">Primera B Metro</a>
 <a href="#">Primera C</a>
 <a href="#">Federal A</a>
-<a href="#">Mercado</a>
-</nav>
+<a href="#">Regional Amateur</a>
+<a href="#">Copa Argentina</a>
+<a href="#">Goleadores</a>
+<a href="#">Mercado de Pases</a>
+</aside>
 
-<section class="hero">
-<h2>La Primera Nacional al frente</h2>
-<p>Noticias, tablas, goleadores, planteles y mucho más.</p>
-<div class="badge">Sitio Oficial en Construcción</div>
-</section>
+<main class="main">
+<h2 style="margin-bottom:15px;">Resultados en Vivo</h2>
 
-<section class="section">
-<h2>Últimas Categorías</h2>
-<div class="cards">
+<div class="match">
+<div class="live">● EN VIVO 67'</div>
+<h3>Colón 2 - 1 Morón</h3>
+<small>Primera Nacional</small>
+</div>
+
+<div class="match">
+<div class="live">● EN VIVO 45'</div>
+<h3>Chicago 0 - 0 Quilmes</h3>
+<small>Primera Nacional</small>
+</div>
+
+<div class="match">
+<h3>Atlanta 3 - 0 Güemes</h3>
+<small>Finalizado</small>
+</div>
+
+<div class="match">
+<h3>Temperley vs Chacarita</h3>
+<small>Hoy 21:10 hs</small>
+</div>
+
+</main>
+
+<aside class="right">
+
 <div class="card">
-<h3>Primera Nacional</h3>
-<p>Fixture, posiciones y noticias destacadas.</p>
+<h3>Tabla Nacional</h3>
+1. Colón<br>
+2. Atlanta<br>
+3. Chacarita<br>
+4. Morón
 </div>
 
 <div class="card">
-<h3>Primera B Metro</h3>
-<p>Resultados, goleadores y mercado de pases.</p>
+<h3>Goleadores</h3>
+Jugador A - 8<br>
+Jugador B - 7<br>
+Jugador C - 6
 </div>
 
 <div class="card">
-<h3>Primera C</h3>
-<p>Seguimiento completo de la categoría.</p>
+<h3>Sponsor</h3>
+Tu marca acá
 </div>
 
-<div class="card">
-<h3>Federal A</h3>
-<p>Interior del país al día.</p>
-</div>
-</div>
-</section>
+</aside>
 
-<section class="section">
-<h2>Zona Sponsor</h2>
-<div class="card">
-<h3>Tu marca acá</h3>
-<p>Publicidad para miles de fanáticos del ascenso.</p>
 </div>
-</section>
-
-<footer>
-Instagram: @FMENASCENSO<br>
-FM en Ascenso 2026
-</footer>
 
 </body>
 </html>
